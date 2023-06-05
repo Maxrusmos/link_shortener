@@ -28,9 +28,8 @@ func handleGetRequest(w http.ResponseWriter, r *http.Request) {
 	originalURL, found := urlMap[id]
 	if found {
 		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(307)
-		w.Header().Add("Location", originalURL)
-		w.Write([]byte(originalURL))
+		w.Header().Set("Location", originalURL)
+		w.WriteHeader(http.StatusTemporaryRedirect)
 	} else {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
 	}
