@@ -28,7 +28,7 @@ func handleGetRequest(w http.ResponseWriter, r *http.Request) {
 	originalURL, found := urlMap[id]
 	if found {
 		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(307)
 		w.Write([]byte(originalURL))
 	} else {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
