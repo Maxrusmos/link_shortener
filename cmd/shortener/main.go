@@ -46,7 +46,7 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 	shortURL := shortenURL(originalURL)
 	urlMap[shortURL] = originalURL
 
-	response := fmt.Sprintf("http://localhost:8081/%s", shortURL)
+	response := fmt.Sprintf("http://localhost:8080/%s", shortURL)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
@@ -62,5 +62,5 @@ func shortenURL(originalURL string) string {
 
 func main() {
 	http.HandleFunc("/", handleRequest)
-	log.Fatal(http.ListenAndServe(":8081", nil))
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
