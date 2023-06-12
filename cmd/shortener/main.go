@@ -62,5 +62,4 @@ cfg := config.GetConfig()
  r.Get("/{id}", handleGetRequest)
  r.Post("/", handlePostRequest)
  log.Fatal(http.ListenAndServe(cfg.Address, r))
- log.Fatal(http.ListenAndServe(":8080", r))
 }
