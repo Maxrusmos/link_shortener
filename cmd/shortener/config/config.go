@@ -10,7 +10,7 @@ type Config struct {
 }
 
 func GetConfig() *Config {
- address := flag.String("a", "http://localhost:8080", "address to run HTTP server")
+ address := flag.String("a", "localhost:8080", "address to run HTTP server")
  baseURL := flag.String("b", "http://localhost:8080/", "base URL for shortened URL")
  flag.Parse()
 
