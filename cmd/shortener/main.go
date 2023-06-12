@@ -41,7 +41,7 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
  shortURL := shortenURL(originalURL)
  urlMap[shortURL] = originalURL
 
- response := fmt.Sprintf(cfg.BaseURL, "/%s", shortURL)
+ response := fmt.Sprintf("%s%s", cfg.BaseURL, shortURL)
  w.Header().Set("Content-Type", "text/plain")
  w.WriteHeader(http.StatusCreated)
  w.Write([]byte(response))
