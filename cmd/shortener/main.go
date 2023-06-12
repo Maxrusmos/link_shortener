@@ -15,8 +15,6 @@ import (
 )
 
 var urlMap = make(map[string]string)
-var cfg = config.GetConfig()
-
 func handleGetRequest(w http.ResponseWriter, r *http.Request) {
  id := strings.TrimPrefix(r.URL.Path, "/")
  originalURL, found := urlMap[id]
@@ -40,6 +38,7 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
  originalURL := string(body)
  shortURL := shortenURL(originalURL)
  urlMap[shortURL] = originalURL
+ cfg := config.GetConfig()
 
  response := fmt.Sprintf("%s%s", cfg.BaseURL, shortURL)
  w.Header().Set("Content-Type", "text/plain")
@@ -55,6 +54,8 @@ func shortenURL(originalURL string) string {
 }
 
 func main() {
+	cfg := config.GetConfig()
+
  r := chi.NewRouter()
 
  r.Get("/{id}", handleGetRequest)
