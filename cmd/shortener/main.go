@@ -19,12 +19,12 @@ var urlMap = make(map[string]string)
 func handleGetRequest(w http.ResponseWriter, r *http.Request) {
  id := strings.TrimPrefix(r.URL.Path, "/")
  originalURL, found := urlMap[id]
- fmt.Println(found)
+ fmt.Println(originalURL)
  if found {
 	w.WriteHeader(http.StatusTemporaryRedirect)
   w.Header().Set("Content-Type", "text/plain")
   w.Header().Set("Location", originalURL)
-//   w.WriteHeader(http.StatusTemporaryRedirect)
+  fmt.Println("header", w.Header().Get("Location"))
  } else {
   http.Error(w, "Invalid URL", http.StatusBadRequest)
  }
