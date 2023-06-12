@@ -15,6 +15,7 @@ import (
 )
 
 var urlMap = make(map[string]string)
+var cfg = config.GetConfig()
 
 func handleGetRequest(w http.ResponseWriter, r *http.Request) {
  id := strings.TrimPrefix(r.URL.Path, "/")
@@ -22,7 +23,7 @@ func handleGetRequest(w http.ResponseWriter, r *http.Request) {
  if found {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Location", originalURL)
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(307)
  } else {
   	http.Error(w, "Invalid URL", http.StatusBadRequest)
  }
@@ -40,7 +41,7 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
  shortURL := shortenURL(originalURL)
  urlMap[shortURL] = originalURL
 
- response := fmt.Sprintf("http://localhost:8080/%s", shortURL)
+ response := fmt.Sprintf(cfg.BaseURL, "/%s", shortURL)
  w.Header().Set("Content-Type", "text/plain")
  w.WriteHeader(http.StatusCreated)
  w.Write([]byte(response))
@@ -54,7 +55,6 @@ func shortenURL(originalURL string) string {
 }
 
 func main() {
-cfg := config.GetConfig()
  r := chi.NewRouter()
 
  r.Get("/{id}", handleGetRequest)
