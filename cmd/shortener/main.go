@@ -41,6 +41,7 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
+	// http.DefaultClient.Do()
 
 	originalURL := string(body)
 	shortURL := shortenURL(originalURL)
