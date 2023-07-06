@@ -63,16 +63,16 @@ func main() {
 	var cfg Config
 	if os.Getenv("SERVER_ADDRESS") != "" {
 		cfg.ServerAddr = os.Getenv("SERVER_ADDRESS")
-	} else {
-		flag.StringVar(&conf.Address, "a", "localhost:8080", "HTTP server address")
+		conf.Address = cfg.ServerAddr
 	}
 	if os.Getenv("BASE_URL") != "" {
 		cfg.BaseURL = os.Getenv("BASE_URL")
-	} else {
-		flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "Base address for shortened URL")
+		conf.BaseURL = cfg.BaseURL
 	}
-	r := chi.NewRouter()
 
+	r := chi.NewRouter()
+	flag.StringVar(&conf.Address, "a", "localhost:8080", "HTTP server address")
+	flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "Base address for shortened URL")
 	flag.Parse()
 	r.Get("/{id}", handleGetRequest)
 	r.Post("/", handlePostRequest)
