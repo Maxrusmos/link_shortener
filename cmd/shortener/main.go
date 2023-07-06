@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +12,11 @@ import (
 
 	"github.com/go-chi/chi"
 )
+
+type Config struct {
+ Address     string
+ BaseAddress string
+}
 
 var urlMap = make(map[string]string)
 
@@ -37,7 +43,7 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
  shortURL := shortenURL(originalURL)
  urlMap[shortURL] = originalURL
 
- response := fmt.Sprintf("http://localhost:8080/%s", shortURL)
+ response := fmt.Sprintf("%s/%s", config.BaseAddress, shortURL)
  w.Header().Set("Content-Type", "text/plain")
  w.WriteHeader(http.StatusCreated)
  w.Write([]byte(response))
@@ -50,11 +56,19 @@ func shortenURL(originalURL string) string {
  return hash[:8]
 }
 
+var config Config
+
+func init() {
+ flag.StringVar(&config.Address, "a", "localhost:8888", "HTTP server address")
+ flag.StringVar(&config.BaseAddress, "b", "http://localhost:8000/", "Base address for shortened URL")
+ flag.Parse()
+}
+
 func main() {
  r := chi.NewRouter()
 
  r.Get("/{id}", handleGetRequest)
  r.Post("/", handlePostRequest)
 
- log.Fatal(http.ListenAndServe(":8080", r))
+ log.Fatal(http.ListenAndServe(config.Address, r))
 }
