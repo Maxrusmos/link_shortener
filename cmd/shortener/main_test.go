@@ -9,31 +9,6 @@ import (
 	"testing"
 )
 
-func TestAFlag(t *testing.T) {
-    // Создаем фейковый аргумент командной строки с флагом -a
-    flag.Set("a", "localhost:8080")
-   
-    // Получаем значение флага -a
-    a := flag.String("a", "localhost:8080", "Адрес программы")
-   
-    // Проверяем, что значение флага -a соответствует ожидаемому значению
-    if *a != "localhost:8080" {
-     t.Errorf("Ожидаемое значение: localhost:8080, получено значение: %s", *a)
-    }
-   }
-   
-   func TestBFlag(t *testing.T) {
-    // Создаем фейковый аргумент командной строки с флагом -b
-    flag.Set("b", "http://localhost:8080")
-   
-    // Получаем значение флага -b
-    b := flag.String("b", "http://localhost:8080/a9b9f043", "Базовый адрес для сокращенных URL")
-   
-    // Проверяем, что значение флага -b соответствует ожидаемому значению
-    if *b != "http://localhost:8080/a9b9f043" {
-     t.Errorf("http://localhost:8080/a9b9f043, получено значение: %s", *b)
-    }
-   }
 func TestHandleGetRequest(t *testing.T) {
  urlMap["test"] = "http://example.com"
 
@@ -115,3 +90,43 @@ func TestShortenURL(t *testing.T) {
   t.Errorf("shortenURL returned wrong length: got %v want %v", len(shortURL), 8)
  }
 }
+
+func TestAFlag(t *testing.T) {
+    // Set up fake command line argument with flag -a
+    flag.Set("a", "localhost:8080")
+   
+    // Initialize fake HTTP server
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+     // Check that server address matches expected value
+     if r.Host != "localhost:8080" {
+      t.Errorf("Expected server address: localhost:8080, got server address: %s", r.Host)
+     }
+    }))
+    defer server.Close()
+   
+    // Run main function with fake command line arguments
+    go main()
+   
+    // Send GET request to fake server
+    http.Get(server.URL)
+   }
+   
+   func TestBFlag(t *testing.T) {
+    // Set up fake command line argument with flag -b
+    flag.Set("b", "http://localhost:8080")
+   
+    // Initialize fake HTTP server
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+     // Check that server address matches expected value
+     if !strings.HasPrefix(r.URL.String(), "/qsd54gFg") {
+      t.Errorf("Expected server address: /qsd54gFg, got server address: %s", r.URL.String())
+     }
+    }))
+    defer server.Close()
+   
+    // Run main function with fake command line arguments
+    go main()
+   
+    // Send GET request to fake server
+    http.Get(server.URL)
+   }
