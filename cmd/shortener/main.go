@@ -59,7 +59,7 @@ func shortenURL(originalURL string) string {
 var config Config
 
 func init() {
- flag.StringVar(&config.Address, "a", "localhost:8888", "HTTP server address")
+ flag.StringVar(&config.Address, "a", "localhost:8080", "HTTP server address")
  flag.StringVar(&config.BaseAddress, "b", "http://localhost:8000/", "Base address for shortened URL")
  flag.Parse()
 }
