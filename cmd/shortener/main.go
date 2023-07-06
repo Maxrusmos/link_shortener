@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"strings"
 
+	"link_shortener/cmd/shortener/config"
+
 	"github.com/go-chi/chi"
 )
 
@@ -19,18 +21,18 @@ type Config struct {
 }
 
 var urlMap = make(map[string]string)
-
 func handleGetRequest(w http.ResponseWriter, r *http.Request) {
  id := strings.TrimPrefix(r.URL.Path, "/")
  originalURL, found := urlMap[id]
  if found {
-  w.Header().Set("Content-Type", "text/plain")
-  w.Header().Set("Location", originalURL)
-  w.WriteHeader(http.StatusTemporaryRedirect)
+	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Location", originalURL)
+	w.WriteHeader(307)
  } else {
-  http.Error(w, "Invalid URL", http.StatusBadRequest)
+  	http.Error(w, "Invalid URL", http.StatusBadRequest)
  }
 }
+
 
 func handlePostRequest(w http.ResponseWriter, r *http.Request) {
  body, err := io.ReadAll(r.Body)
@@ -42,8 +44,12 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
  originalURL := string(body)
  shortURL := shortenURL(originalURL)
  urlMap[shortURL] = originalURL
+ cfg := config.GetConfig()
+
 
  response := fmt.Sprintf("%s/%s", config.BaseAddress, shortURL)
+
+
  w.Header().Set("Content-Type", "text/plain")
  w.WriteHeader(http.StatusCreated)
  w.Write([]byte(response))
@@ -65,10 +71,14 @@ func init() {
 }
 
 func main() {
+	cfg := config.GetConfig()
+
  r := chi.NewRouter()
 
  r.Get("/{id}", handleGetRequest)
  r.Post("/", handlePostRequest)
 
+
  log.Fatal(http.ListenAndServe(config.Address, r))
+
 }
