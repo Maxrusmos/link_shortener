@@ -2,13 +2,38 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
-
+func TestAFlag(t *testing.T) {
+    // Создаем фейковый аргумент командной строки с флагом -a
+    flag.Set("a", "localhost:8080")
+   
+    // Получаем значение флага -a
+    a := flag.String("a", "localhost:8080", "Адрес программы")
+   
+    // Проверяем, что значение флага -a соответствует ожидаемому значению
+    if *a != "localhost:8080" {
+     t.Errorf("Ожидаемое значение: localhost:8080, получено значение: %s", *a)
+    }
+   }
+   
+   func TestBFlag(t *testing.T) {
+    // Создаем фейковый аргумент командной строки с флагом -b
+    flag.Set("b", "http://localhost:8080")
+   
+    // Получаем значение флага -b
+    b := flag.String("b", "http://localhost:8080/a9b9f043", "Базовый адрес для сокращенных URL")
+   
+    // Проверяем, что значение флага -b соответствует ожидаемому значению
+    if *b != "http://localhost:8080/a9b9f043" {
+     t.Errorf("http://localhost:8080/a9b9f043, получено значение: %s", *b)
+    }
+   }
 func TestHandleGetRequest(t *testing.T) {
  urlMap["test"] = "http://example.com"
 
