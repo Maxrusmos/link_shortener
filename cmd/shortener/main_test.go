@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"flag"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -90,43 +89,3 @@ func TestShortenURL(t *testing.T) {
   t.Errorf("shortenURL returned wrong length: got %v want %v", len(shortURL), 8)
  }
 }
-
-func TestAFlag(t *testing.T) {
-    // Set up fake command line argument with flag -a
-    flag.Set("a", "localhost:8080")
-   
-    // Initialize fake HTTP server
-    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-     // Check that server address matches expected value
-     if r.Host != "localhost:8080" {
-      t.Errorf("Expected server address: localhost:8080, got server address: %s", r.Host)
-     }
-    }))
-    defer server.Close()
-   
-    // Run main function with fake command line arguments
-    go main()
-   
-    // Send GET request to fake server
-    http.Get(server.URL)
-   }
-   
-   func TestBFlag(t *testing.T) {
-    // Set up fake command line argument with flag -b
-    flag.Set("b", "http://localhost:8080")
-   
-    // Initialize fake HTTP server
-    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-     // Check that server address matches expected value
-     if !strings.HasPrefix(r.URL.String(), "/qsd54gFg") {
-      t.Errorf("Expected server address: /qsd54gFg, got server address: %s", r.URL.String())
-     }
-    }))
-    defer server.Close()
-   
-    // Run main function with fake command line arguments
-    go main()
-   
-    // Send GET request to fake server
-    http.Get(server.URL)
-   }

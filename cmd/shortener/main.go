@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -59,9 +58,9 @@ func shortenURL(originalURL string) string {
 var config Config
 
 func init() {
- flag.StringVar(&config.Address, "a", "localhost:8080", "HTTP server address")
- flag.StringVar(&config.BaseAddress, "b", "http://localhost:8080", "Base address for shortened URL")
- flag.Parse()
+//  flag.StringVar(&config.Address, "a", "localhost:8080", "HTTP server address")
+//  flag.StringVar(&config.BaseAddress, "b", "http://localhost:8080", "Base address for shortened URL")
+//  flag.Parse()
 }
 
 func main() {
@@ -71,5 +70,4 @@ func main() {
  r.Post("/", handlePostRequest)
 
  log.Fatal(http.ListenAndServe(config.Address, r))
-//  log.Fatal(http.ListenAndServe(config.BaseAddress, r))
 }
