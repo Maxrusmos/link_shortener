@@ -37,6 +37,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		return
 	}
 
+	fmt.Println(conf.BaseURL)
 	response := fmt.Sprintf("%s/%s", conf.BaseURL, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
