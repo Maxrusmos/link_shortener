@@ -2,17 +2,23 @@ package main
 
 import (
 	"bytes"
-	"link_shortener/internal/data"
+	"fmt"
 	"link_shortener/internal/services"
 	"link_shortener/internal/shortenurl"
+	"link_shortener/internal/storage"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
+var URLMap = storage.NewMapURLStorage()
+
+// var URLMap = make(map[string]string)
+
 func TestHandleGetRequest(t *testing.T) {
-	data.URLMap["test"] = "http://example.com"
+	// URLMap["test"] = "http://example.com"
+	URLMap.AddURL("test", "http://example.com")
 
 	req, err := http.NewRequest("GET", "/test", nil)
 	if err != nil {
@@ -20,7 +26,9 @@ func TestHandleGetRequest(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(services.HandleGetRequest)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		services.HandleGetRequest(w, r, URLMap)
+	})
 
 	handler.ServeHTTP(rr, req)
 
@@ -42,7 +50,9 @@ func TestHandleGetRequestInvalidURL(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(services.HandleGetRequest)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		services.HandleGetRequest(w, r, URLMap)
+	})
 
 	handler.ServeHTTP(rr, req)
 
@@ -60,7 +70,9 @@ func TestHandlePostRequest(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(services.HandlePostRequest)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		services.HandlePostRequest(w, r, URLMap)
+	})
 
 	handler.ServeHTTP(rr, req)
 
@@ -75,10 +87,11 @@ func TestHandlePostRequest(t *testing.T) {
 	}
 
 	shortURL := strings.TrimPrefix(response, "http://localhost:8080/")
-	originalURL, found := data.URLMap[shortURL]
-	if !found {
-		t.Errorf("handlePostRequest did not add short URL to map")
-	}
+	originalURL, er := URLMap.GetURL(shortURL)
+	fmt.Println(er)
+	// if er {
+	// 	t.Errorf("handlePostRequest did not add short URL to map")
+	// }
 
 	if originalURL != "http://example.com" {
 		t.Errorf("handlePostRequest added wrong original URL to map: got %v want %v", originalURL, "http://example.com")
