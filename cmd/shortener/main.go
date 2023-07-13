@@ -1,12 +1,11 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"flag"
 	"fmt"
 	"io"
 	config "link_shortener/internal/configs"
+	"link_shortener/internal/shortenurl"
 	"log"
 	"net/http"
 	"os"
@@ -38,20 +37,13 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	originalURL := string(body)
-	shortURL := shortenURL(originalURL)
+	shortURL := shortenurl.Shortener(originalURL)
 	urlMap[shortURL] = originalURL
 
 	response := fmt.Sprintf("%s/%s", conf.BaseURL, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
-}
-
-func shortenURL(originalURL string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(originalURL))
-	hash := hex.EncodeToString(hasher.Sum(nil))
-	return hash[:8]
 }
 
 type Config struct {
