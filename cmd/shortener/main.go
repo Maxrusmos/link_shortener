@@ -1,12 +1,11 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"flag"
 	"fmt"
 	"io"
-	"link_shortener/cmd/shortener/config"
+	config "link_shortener/internal/configs"
+	"link_shortener/internal/shortenurl"
 	"log"
 	"net/http"
 	"os"
@@ -36,9 +35,8 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-
 	originalURL := string(body)
-	shortURL := shortenURL(originalURL)
+	shortURL := shortenurl.Shortener(originalURL)
 	urlMap[shortURL] = originalURL
 
 	response := fmt.Sprintf("%s/%s", conf.BaseURL, shortURL)
@@ -47,35 +45,21 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-func shortenURL(originalURL string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(originalURL))
-	hash := hex.EncodeToString(hasher.Sum(nil))
-	return hash[:8]
-}
-
-type Config struct {
-	ServerAddr string `env:"SERVER_ADDRESS"`
-	BaseURL    string `env:"BASE_URL"`
-}
-
 func main() {
-	var cfg Config
-	if os.Getenv("SERVER_ADDRESS") != "" {
-		cfg.ServerAddr = os.Getenv("SERVER_ADDRESS")
-		conf.Address = cfg.ServerAddr
+	if os.Getenv(conf.ServerAddrENV) != "" {
+		conf.ServerAddrENV = os.Getenv(conf.ServerAddrENV)
+		conf.Address = conf.ServerAddrENV
 	}
-	if os.Getenv("BASE_URL") != "" {
-		cfg.BaseURL = os.Getenv("BASE_URL")
-		conf.BaseURL = cfg.BaseURL
+	if os.Getenv(conf.BaseURLENV) != "" {
+		conf.BaseURLENV = os.Getenv(conf.BaseURLENV)
+		conf.BaseURL = conf.BaseURLENV
 	}
 
 	r := chi.NewRouter()
-	flag.StringVar(&conf.Address, "a", "localhost:8080", "HTTP server address")
-	flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "Base address for shortened URL")
+	flag.StringVar(&conf.Address, "a", "localhost:8080", "адрес")
+	flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "базовый URL")
 	flag.Parse()
 	r.Get("/{id}", handleGetRequest)
 	r.Post("/", handlePostRequest)
-
 	log.Fatal(http.ListenAndServe(conf.Address, r))
 }

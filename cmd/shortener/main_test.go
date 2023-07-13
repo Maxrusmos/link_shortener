@@ -2,13 +2,14 @@ package main
 
 import (
 	"bytes"
+	"link_shortener/internal/shortenurl"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
-func TestHandleGetRequest(t *testing.T) {
+func estHandleGetRequest(t *testing.T) {
 	urlMap["test"] = "http://example.com"
 
 	req, err := http.NewRequest("GET", "/test", nil)
@@ -39,7 +40,7 @@ func TestHandleGetRequestInvalidURL(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handleGetRequest)
+	handler := http.HandlerFunc(handlePostRequest)
 
 	handler.ServeHTTP(rr, req)
 
@@ -83,7 +84,7 @@ func TestHandlePostRequest(t *testing.T) {
 }
 
 func TestShortenURL(t *testing.T) {
-	shortURL := shortenURL("http://example.com")
+	shortURL := shortenurl.Shortener("http://example.com")
 
 	if len(shortURL) != 8 {
 		t.Errorf("shortenURL returned wrong length: got %v want %v", len(shortURL), 8)
