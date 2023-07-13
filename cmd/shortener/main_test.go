@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"link_shortener/internal/data"
+	"link_shortener/internal/services"
 	"link_shortener/internal/shortenurl"
 	"net/http"
 	"net/http/httptest"
@@ -9,8 +11,8 @@ import (
 	"testing"
 )
 
-func estHandleGetRequest(t *testing.T) {
-	urlMap["test"] = "http://example.com"
+func TestHandleGetRequest(t *testing.T) {
+	data.URLMap["test"] = "http://example.com"
 
 	req, err := http.NewRequest("GET", "/test", nil)
 	if err != nil {
@@ -18,7 +20,7 @@ func estHandleGetRequest(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handleGetRequest)
+	handler := http.HandlerFunc(services.HandleGetRequest)
 
 	handler.ServeHTTP(rr, req)
 
@@ -40,7 +42,7 @@ func TestHandleGetRequestInvalidURL(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handlePostRequest)
+	handler := http.HandlerFunc(services.HandleGetRequest)
 
 	handler.ServeHTTP(rr, req)
 
@@ -58,7 +60,7 @@ func TestHandlePostRequest(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handlePostRequest)
+	handler := http.HandlerFunc(services.HandlePostRequest)
 
 	handler.ServeHTTP(rr, req)
 
@@ -73,7 +75,7 @@ func TestHandlePostRequest(t *testing.T) {
 	}
 
 	shortURL := strings.TrimPrefix(response, "http://localhost:8080/")
-	originalURL, found := urlMap[shortURL]
+	originalURL, found := data.URLMap[shortURL]
 	if !found {
 		t.Errorf("handlePostRequest did not add short URL to map")
 	}
@@ -83,7 +85,7 @@ func TestHandlePostRequest(t *testing.T) {
 	}
 }
 
-func TestShortenURL(t *testing.T) {
+func TestShortener(t *testing.T) {
 	shortURL := shortenurl.Shortener("http://example.com")
 
 	if len(shortURL) != 8 {
