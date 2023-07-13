@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	config "link_shortener/internal/configs"
 	"link_shortener/internal/services"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
@@ -14,10 +15,7 @@ import (
 
 var URLMap = storage.NewMapURLStorage()
 
-// var URLMap = make(map[string]string)
-
 func TestHandleGetRequest(t *testing.T) {
-	// URLMap["test"] = "http://example.com"
 	URLMap.AddURL("test", "http://example.com")
 
 	req, err := http.NewRequest("GET", "/test", nil)
@@ -71,7 +69,7 @@ func TestHandlePostRequest(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		services.HandlePostRequest(w, r, URLMap)
+		services.HandlePostRequest(w, r, URLMap, config.GetConfig().BaseURL)
 	})
 
 	handler.ServeHTTP(rr, req)
@@ -89,9 +87,6 @@ func TestHandlePostRequest(t *testing.T) {
 	shortURL := strings.TrimPrefix(response, "http://localhost:8080/")
 	originalURL, er := URLMap.GetURL(shortURL)
 	fmt.Println(er)
-	// if er {
-	// 	t.Errorf("handlePostRequest did not add short URL to map")
-	// }
 
 	if originalURL != "http://example.com" {
 		t.Errorf("handlePostRequest added wrong original URL to map: got %v want %v", originalURL, "http://example.com")

@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+var conf = config.GetConfig()
+
 func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
 	fmt.Println(storage)
@@ -22,8 +24,7 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
-	conf := config.GetConfig()
+func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseUrl string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -37,8 +38,8 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		return
 	}
 
-	fmt.Println(conf.BaseURL)
-	response := fmt.Sprintf("%s/%s", conf.BaseURL, shortURL)
+	fmt.Println(baseUrl)
+	response := fmt.Sprintf("%s/%s", baseUrl, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
