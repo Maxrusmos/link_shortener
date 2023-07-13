@@ -15,6 +15,8 @@ import (
 )
 
 var urlMap = make(map[string]string)
+
+// var urlStorage *data.URLStorage
 var conf = config.GetConfig()
 
 func handleGetRequest(w http.ResponseWriter, r *http.Request) {
@@ -46,21 +48,8 @@ func handlePostRequest(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
-// type Config struct {
-// 	ServerAddr string `env:"SERVER_ADDRESS"`
-// 	BaseURL    string `env:"BASE_URL"`
-// }
-
 func main() {
-	// var cfg Config
-	// if os.Getenv("SERVER_ADDRESS") != "" {
-	// 	cfg.ServerAddr = os.Getenv("SERVER_ADDRESS")
-	// 	conf.Address = cfg.ServerAddr
-	// }
-	// if os.Getenv("BASE_URL") != "" {
-	// 	cfg.BaseURL = os.Getenv("BASE_URL")
-	// 	conf.BaseURL = cfg.BaseURL
-	// }
+	// urlStorage = data.NewURLStorage()
 	if os.Getenv(conf.ServerAddrENV) != "" {
 		conf.ServerAddrENV = os.Getenv(conf.ServerAddrENV)
 		conf.Address = conf.ServerAddrENV
