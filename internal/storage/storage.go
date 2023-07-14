@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 	"link_shortener/internal/shortenurl"
+	"sync"
 )
 
 type URLStorage interface {
@@ -12,7 +13,8 @@ type URLStorage interface {
 }
 
 type mapURLStorage struct {
-	urls map[string]string
+	urls  map[string]string
+	mutex sync.Mutex
 }
 
 func NewMapURLStorage() URLStorage {
@@ -23,11 +25,15 @@ func NewMapURLStorage() URLStorage {
 
 func (s *mapURLStorage) AddURLSH(url string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	s.urls[shortURL] = url
 	return shortURL, nil
 }
 
 func (s *mapURLStorage) AddURL(key string, url string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	if _, found := s.urls[key]; found {
 		return errors.New("key already exists")
 	}
@@ -36,6 +42,8 @@ func (s *mapURLStorage) AddURL(key string, url string) error {
 }
 
 func (s *mapURLStorage) GetURL(key string) (string, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	url, found := s.urls[key]
 	if !found {
 		return "", errors.New("key not found")

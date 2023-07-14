@@ -3,13 +3,10 @@ package services
 import (
 	"fmt"
 	"io"
-	config "link_shortener/internal/configs"
 	"link_shortener/internal/storage"
 	"net/http"
 	"strings"
 )
-
-var conf = config.GetConfig()
 
 func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
@@ -38,7 +35,6 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		return
 	}
 
-	fmt.Println(baseUrl)
 	response := fmt.Sprintf("%s/%s", baseUrl, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
