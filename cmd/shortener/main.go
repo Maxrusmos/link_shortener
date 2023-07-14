@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	config "link_shortener/internal/configs"
 	"link_shortener/internal/services"
 	"link_shortener/internal/storage"
@@ -18,8 +17,6 @@ func main() {
 	flag.StringVar(&conf.Address, "a", "localhost:8080", "HTTP server address")
 	flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "Base address for shortened URL")
 	flag.Parse()
-
-	fmt.Println(conf)
 
 	storage := storage.NewMapURLStorage()
 

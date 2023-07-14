@@ -10,7 +10,6 @@ import (
 
 func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
-	fmt.Println(storage)
 	originalURL, err := storage.GetURL(id)
 	if err != nil {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
@@ -21,7 +20,7 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseUrl string) {
+func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -35,7 +34,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		return
 	}
 
-	response := fmt.Sprintf("%s/%s", baseUrl, shortURL)
+	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
