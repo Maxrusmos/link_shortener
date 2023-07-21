@@ -1,4 +1,4 @@
-package loggerMiddleware
+package loggermiddleware
 
 import (
 	"net/http"
