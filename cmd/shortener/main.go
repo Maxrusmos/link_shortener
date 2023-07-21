@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	config "link_shortener/internal/configs"
-	"link_shortener/internal/loggermiddleware"
+	"link_shortener/internal/middleware"
 	"link_shortener/internal/services"
 	"link_shortener/internal/storage"
 	"log"
@@ -38,7 +38,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:         ":8080",
-		Handler:      loggermiddleware.LoggingMiddleware(logger, r),
+		Handler:      middleware.LoggingMiddleware(logger, r),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
