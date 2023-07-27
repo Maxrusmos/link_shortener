@@ -109,8 +109,8 @@ func TestShortenHandler(t *testing.T) {
 	services.ShortenHandler(rr, req, URLMap, "http://example.com")
 
 	// Check the response status code
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	if status := rr.Code; status != http.StatusCreated {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
 	}
 
 	// Check the response body
