@@ -42,7 +42,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 }
 
 type URL struct {
-	Url string `json:"url"`
+	URL string `json:"url"`
 }
 
 type ShortURL struct {
@@ -60,7 +60,7 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	shortURL, err := storage.AddURLSH(url.Url)
+	shortURL, err := storage.AddURLSH(url.URL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
