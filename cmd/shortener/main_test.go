@@ -93,14 +93,6 @@ func TestHandlePostRequest(t *testing.T) {
 	}
 }
 
-type Url struct {
-	Url string `json:"url"`
-}
-
-type ShortUrl struct {
-	Result string `json:"result"`
-}
-
 func TestShortenHandler(t *testing.T) {
 
 	// Create a test request with a JSON body

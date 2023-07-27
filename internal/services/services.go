@@ -41,11 +41,11 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	w.Write([]byte(response))
 }
 
-type Url struct {
+type URL struct {
 	Url string `json:"url"`
 }
 
-type ShortUrl struct {
+type ShortURL struct {
 	Result string `json:"result"`
 }
 
@@ -54,7 +54,7 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	var url Url
+	var url URL
 	err := json.NewDecoder(r.Body).Decode(&url)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -65,7 +65,7 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	response := ShortUrl{Result: baseURL + "/" + shortUrl}
+	response := ShortURL{Result: baseURL + "/" + shortUrl}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
