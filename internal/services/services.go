@@ -72,5 +72,6 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonResponse)
 }
