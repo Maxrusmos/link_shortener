@@ -35,7 +35,9 @@ func main() {
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		services.HandlePostRequest(w, r, storage, conf.BaseURL)
 	})
-
+	r.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
+		services.ShortenHandler(w, r, storage, conf.BaseURL)
+	})
 	server := &http.Server{
 		Addr:         conf.Address,
 		Handler:      middleware.LoggingMiddleware(logger, r),
