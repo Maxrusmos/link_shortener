@@ -60,12 +60,12 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	shortUrl, err := storage.AddURLSH(url.Url)
+	shortURL, err := storage.AddURLSH(url.Url)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	response := ShortURL{Result: baseURL + "/" + shortUrl}
+	response := ShortURL{Result: baseURL + "/" + shortURL}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
