@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"compress/gzip"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -58,13 +58,13 @@ func CompressionMiddleware(next http.Handler) http.Handler {
 				return
 			}
 			defer reader.Close()
-			body, err := ioutil.ReadAll(reader)
+			body, err := io.ReadAll(reader)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				w.Write([]byte("Error decompressing request body"))
 				return
 			}
-			r.Body = ioutil.NopCloser(strings.NewReader(string(body)))
+			r.Body = io.NopCloser(strings.NewReader(string(body)))
 			r.Header.Del("Content-Encoding")
 			r.Header.Set("Content-Length", string(rune(len(body))))
 		}
