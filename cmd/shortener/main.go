@@ -40,7 +40,7 @@ func main() {
 	})
 	server := &http.Server{
 		Addr:         conf.Address,
-		Handler:      middleware.LoggingMiddleware(logger, r),
+		Handler:      middleware.CompressionMiddleware(middleware.LoggingMiddleware(logger, r)),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,

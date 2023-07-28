@@ -1,7 +1,10 @@
 package middleware
 
 import (
+	"compress/gzip"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -41,4 +44,30 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	size, err := rw.ResponseWriter.Write(b)
 	rw.size += int64(size)
 	return size, err
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
+func CompressionMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.Header.Get("Content-Encoding"), "gzip") {
+			reader, err := gzip.NewReader(r.Body)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte("Error reading compressed request body"))
+				return
+			}
+			defer reader.Close()
+			body, err := ioutil.ReadAll(reader)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte("Error decompressing request body"))
+				return
+			}
+			r.Body = ioutil.NopCloser(strings.NewReader(string(body)))
+			r.Header.Del("Content-Encoding")
+			r.Header.Set("Content-Length", string(rune(len(body))))
+		}
+		next.ServeHTTP(w, r)
+	})
 }
