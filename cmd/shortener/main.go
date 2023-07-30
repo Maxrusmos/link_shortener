@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	config "link_shortener/internal/configs"
+	"link_shortener/internal/fileWork"
 	"time"
 
 	"link_shortener/internal/middleware"
@@ -51,4 +52,5 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		logger.Error("server stopped", zap.Error(err))
 	}
+	fileWork.ReadDataFromFile(conf.FileStore, storage)
 }
