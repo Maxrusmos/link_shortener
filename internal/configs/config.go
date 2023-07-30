@@ -7,8 +7,10 @@ import (
 type Config struct {
 	Address       string
 	BaseURL       string
+	FileStore     string
 	ServerAddrENV string `env:"SERVER_ADDRESS"`
 	BaseURLENV    string `env:"BASE_URL"`
+	FileENV       string `env: "FILE_STORAGE_PATH"`
 }
 
 func GetBaseURL(cfg Config) string {
@@ -27,6 +29,12 @@ func GetConfig() Config {
 		conf.BaseURL = baseURL
 	} else {
 		conf.BaseURL = "http://localhost:8080"
+	}
+
+	if fileName := os.Getenv("FILE_STORAGE_PATH"); fileName != "" {
+		conf.FileStore = fileName
+	} else {
+		conf.FileStore = "short-url-db.json"
 	}
 	return conf
 }

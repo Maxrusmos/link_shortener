@@ -1,11 +1,14 @@
 package services
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
+	config "link_shortener/internal/configs"
 	"link_shortener/internal/storage"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -36,6 +39,14 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	}
 
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
+	conf := config.GetConfig()
+	urlToWrite := jsonURLs{
+		ShortURL:  shortURL,
+		OriginURL: originalURL,
+	}
+
+	WriteURLsToFile(conf.FileStore, urlToWrite)
+	ReadDataFromFile(conf.FileStore, storage)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
@@ -74,4 +85,50 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonResponse)
+}
+
+type jsonURLs struct {
+	ShortURL  string `json:"shortURL"`
+	OriginURL string `json:"originURL"`
+}
+
+func WriteURLsToFile(filename string, dataToWrite jsonURLs) error {
+	data, err := json.Marshal(dataToWrite)
+	if err != nil {
+		return err
+	}
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	_, err = file.WriteString(string(data) + "\n")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ReadDataFromFile(filename string, storage storage.URLStorage) error {
+	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		var data jsonURLs
+		err := json.Unmarshal(scanner.Bytes(), &data)
+		if err != nil {
+			return err
+		}
+		err = storage.AddURL(data.ShortURL, data.OriginURL)
+		if err != nil {
+			return err
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	return nil
 }
