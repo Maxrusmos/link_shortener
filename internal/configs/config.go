@@ -10,7 +10,7 @@ type Config struct {
 	FileStore     string
 	ServerAddrENV string `env:"SERVER_ADDRESS"`
 	BaseURLENV    string `env:"BASE_URL"`
-	FileENV       string `env: "FILE_STORAGE_PATH"`
+	FileENV       string `env:"FILE_STORAGE_PATH"`
 }
 
 func GetBaseURL(cfg Config) string {
