@@ -1,4 +1,4 @@
-package fileWork
+package filework
 
 import (
 	"bufio"
@@ -7,12 +7,12 @@ import (
 	"os"
 )
 
-type JsonURLs struct {
+type JSONURLs struct {
 	ShortURL  string `json:"shortURL"`
 	OriginURL string `json:"originURL"`
 }
 
-func CheckIfURLExistsInFile(filename string, urls JsonURLs) (bool, error) {
+func CheckIfURLExistsInFile(filename string, urls JSONURLs) (bool, error) {
 	existingData, err := ReadJSONFile(filename)
 	if err != nil {
 		return false, err
@@ -25,17 +25,17 @@ func CheckIfURLExistsInFile(filename string, urls JsonURLs) (bool, error) {
 	return false, nil
 }
 
-func ReadJSONFile(filename string) ([]JsonURLs, error) {
+func ReadJSONFile(filename string) ([]JSONURLs, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	var data []JsonURLs
+	var data []JSONURLs
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		var d JsonURLs
+		var d JSONURLs
 		err := json.Unmarshal(scanner.Bytes(), &d)
 		if err != nil {
 			return nil, err
@@ -48,7 +48,7 @@ func ReadJSONFile(filename string) ([]JsonURLs, error) {
 	return data, nil
 }
 
-func WriteURLsToFile(filename string, dataToWrite JsonURLs) error {
+func WriteURLsToFile(filename string, dataToWrite JSONURLs) error {
 	data, err := json.Marshal(dataToWrite)
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func ReadDataFromFile(filename string, storage storage.URLStorage) error {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		var data JsonURLs
+		var data JSONURLs
 		err := json.Unmarshal(scanner.Bytes(), &data)
 		if err != nil {
 			return err

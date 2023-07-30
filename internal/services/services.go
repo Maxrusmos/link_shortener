@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	config "link_shortener/internal/configs"
-	"link_shortener/internal/fileWork"
+	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/storage"
 	"net/http"
 	"strings"
@@ -39,11 +39,11 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
 	conf := config.GetConfig()
-	urlToWrite := fileWork.JsonURLs{
+	urlToWrite := filework.JSONURLs{
 		ShortURL:  shortURL,
 		OriginURL: originalURL,
 	}
-	fileWork.WriteURLsToFile(conf.FileStore, urlToWrite)
+	filework.WriteURLsToFile(conf.FileStore, urlToWrite)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
