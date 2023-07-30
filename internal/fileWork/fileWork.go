@@ -54,19 +54,20 @@ func WriteURLsToFile(filename string, dataToWrite JSONURLs) error {
 		return err
 	}
 
-	isExist, err := CheckIfURLExistsInFile(filename, dataToWrite)
-	if err != nil {
-		return err
-	}
-
-	if isExist {
-		return nil
-	}
-
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+
 	if err != nil {
 		return err
 	}
+
+	// isExist, err := CheckIfURLExistsInFile(filename, dataToWrite)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// if isExist {
+	// 	return nil
+	// }
 	defer file.Close()
 	_, err = file.WriteString(string(data) + "\n")
 	if err != nil {
