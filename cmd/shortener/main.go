@@ -28,13 +28,17 @@ func main() {
 	flag.StringVar(&conf.Address, "a", "localhost:8080", "HTTP server address")
 	flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "Base address for shortened URL")
 	flag.StringVar(&conf.FileStore, "f", "short-url-db.json", "File storage")
+	flag.StringVar(&conf.FileStore, "d", "user=postgres password=490Sutud dbname=link-shortener sslmode=disable", "db Connection String")
 	flag.Parse()
 
 	storage := storage.NewMapURLStorage()
-	dbwork.Connect(conf.DbConnect)
+	db, err := dbwork.Connect(conf.DbConnect)
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, storage)
+	})
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		services.Ping(db)
 	})
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		services.HandlePostRequest(w, r, storage, conf.BaseURL)

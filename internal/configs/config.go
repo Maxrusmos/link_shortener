@@ -41,6 +41,8 @@ func GetConfig() Config {
 
 	if dbConnect := os.Getenv("DATABASE_DSN"); dbConnect != "" {
 		conf.DbConnect = dbConnect
+	} else {
+		conf.DbConnect = "user=postgres password=490Sutud dbname=link-shortener sslmode=disable"
 	}
 
 	return conf
