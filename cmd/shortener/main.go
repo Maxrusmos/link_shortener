@@ -33,6 +33,9 @@ func main() {
 
 	storage := storage.NewMapURLStorage()
 	db, err := dbwork.Connect(conf.DbConnect)
+	if err != nil {
+		logger.Error("failed DB connection", zap.Error(err))
+	}
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, storage)
