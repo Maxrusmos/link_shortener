@@ -32,7 +32,7 @@ func main() {
 	flag.Parse()
 
 	storage := storage.NewMapURLStorage()
-	db, err := dbwork.Connect(conf.DbConnect)
+	db, err := dbwork.Connect(conf.DBConnect)
 	if err != nil {
 		logger.Error("failed DB connection", zap.Error(err))
 	}
