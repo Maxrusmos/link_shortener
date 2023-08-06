@@ -8,7 +8,7 @@ type Config struct {
 	Address       string
 	BaseURL       string
 	FileStore     string
-	DbConnect     string
+	DBConnect     string
 	ServerAddrENV string `env:"SERVER_ADDRESS"`
 	BaseURLENV    string `env:"BASE_URL"`
 	FileENV       string `env:"FILE_STORAGE_PATH"`
@@ -40,9 +40,9 @@ func GetConfig() Config {
 	}
 
 	if dbConnect := os.Getenv("DATABASE_DSN"); dbConnect != "" {
-		conf.DbConnect = dbConnect
+		conf.DBConnect = dbConnect
 	} else {
-		conf.DbConnect = "user=postgres password=490Sutud dbname=link-shortener sslmode=disable"
+		conf.DBConnect = "user=postgres password=490Sutud dbname=link-shortener sslmode=disable"
 	}
 
 	return conf
