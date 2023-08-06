@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	config "link_shortener/internal/configs"
+	"link_shortener/internal/dbwork"
 	filework "link_shortener/internal/fileWork"
 	"time"
 
@@ -30,6 +31,7 @@ func main() {
 	flag.Parse()
 
 	storage := storage.NewMapURLStorage()
+	dbwork.Connect(conf.DbConnect)
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, storage)

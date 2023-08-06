@@ -8,9 +8,11 @@ type Config struct {
 	Address       string
 	BaseURL       string
 	FileStore     string
+	DbConnect     string
 	ServerAddrENV string `env:"SERVER_ADDRESS"`
 	BaseURLENV    string `env:"BASE_URL"`
 	FileENV       string `env:"FILE_STORAGE_PATH"`
+	dbENV         string `env:"DATABASE_DSN"`
 }
 
 func GetBaseURL(cfg Config) string {
@@ -36,5 +38,10 @@ func GetConfig() Config {
 	} else {
 		conf.FileStore = "short-url-db.json"
 	}
+
+	if dbConnect := os.Getenv("DATABASE_DSN"); dbConnect != "" {
+		conf.DbConnect = dbConnect
+	}
+
 	return conf
 }
