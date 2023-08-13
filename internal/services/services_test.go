@@ -15,7 +15,7 @@ var URLMap = storage.NewMapURLStorage()
 
 func TestHandleGetRequest(t *testing.T) {
 	URLMap.AddURL("a9b9f043", "http://example.com")
-	req, err := http.NewRequest("GET", "/a9b9f043", nil)
+	req, err := http.NewRequest("GET", "/c984d06a", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,5 +38,5 @@ func TestHandlePostRequest(t *testing.T) {
 	HandlePostRequest(rr, req, URLMap, config.GetConfig().BaseURL)
 
 	assert.Equal(t, http.StatusCreated, rr.Code)
-	assert.Contains(t, rr.Body.String(), "http://localhost/a9b9f043")
+	assert.Contains(t, rr.Body.String(), "http://localhost:8080/c984d06a")
 }
