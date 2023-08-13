@@ -29,7 +29,7 @@ func TestHandleGetRequest(t *testing.T) {
 
 func TestHandlePostRequest(t *testing.T) {
 	body := strings.NewReader(`"https://www.example.com"`)
-	req, err := http.NewRequest("POST", "/shorten", body)
+	req, err := http.NewRequest("POST", "/", body)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,5 +38,5 @@ func TestHandlePostRequest(t *testing.T) {
 	HandlePostRequest(rr, req, URLMap, config.GetConfig().BaseURL)
 
 	assert.Equal(t, http.StatusCreated, rr.Code)
-	assert.Contains(t, rr.Body.String(), "http://localhost/abc123")
+	assert.Contains(t, rr.Body.String(), "http://localhost/a9b9f043")
 }

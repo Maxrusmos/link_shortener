@@ -4,34 +4,35 @@ import (
 	"database/sql"
 	"testing"
 
+	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
 
-func CreateTestTables(db *sql.DB, createTableQuery string) error {
+func CreateTestTable(db *sql.DB) error {
+	const createTableQuery = `CREATE TEMPORARY TABLE test (id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)`
 	_, err := db.Exec(createTableQuery)
 	return err
 }
-
 func DropTestTables(db *sql.DB) error {
 	_, err := db.Exec("DROP TABLE IF EXISTS test")
 	return err
 }
 func TestDBWork(t *testing.T) {
 	// Подключение к тестовой базе данных
-	connStr := "user=postgres password=490Sutud dbname=testDB sslmode=disable"
+	connStr := "user=postgres password=490Sutud dbname=link-shortener sslmode=disable"
 	testDB, err := sql.Open("postgres", connStr)
 	assert.NoError(t, err, "Failed to connect to test database")
 	defer testDB.Close()
 
 	// Создание тестовых таблиц
-	const createTableQuery = `CREATE TABLE IF NOT EXISTS test ( id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)`
-	err = CreateTestTables(testDB, createTableQuery)
+	err = CreateTestTable(testDB)
 	assert.NoError(t, err, "Failed to create table")
 
 	// Добавление и получение URL
-	shortURL := "c504216b"
-	originalURL := "https://practicum.ru"
+	// uuid := uuid.New().String()
+	shortURL := uuid.New().String()
+	originalURL := uuid.New().String()
 	err = AddURL(testDB, shortURL, originalURL)
 	assert.NoError(t, err, "Failed to add URL")
 
@@ -40,8 +41,8 @@ func TestDBWork(t *testing.T) {
 	assert.Equal(t, originalURL, retrievedURL, "Retrieved URL does not match")
 
 	// Очистка тестовой базы данных (нужно предварительно удалить таблицы)
-	_, err = testDB.Exec("DROP TABLE IF EXISTS test")
-	assert.NoError(t, err, "Failed to drop tables")
+	// _, err = testDB.Exec("DROP TABLE IF EXISTS test")
+	// assert.NoError(t, err, "Failed to drop tables")
 }
 
 func TestConnect(t *testing.T) {
