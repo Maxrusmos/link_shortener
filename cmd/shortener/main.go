@@ -3,7 +3,9 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	config "link_shortener/internal/configs"
+	"link_shortener/internal/flagpkg"
 	"link_shortener/internal/storage"
 	"time"
 
@@ -32,28 +34,28 @@ func main() {
 	// user=postgres password=490Sutud dbname=link-shortener sslmode=disable
 	flag.Parse()
 
-	var flagProvided string
 	storage := storage.NewMapURLStorage()
-
+	flag := flagpkg.GetSharedFlag()
 	if conf.DBConnect == "" {
 		if conf.FileStore == "" {
-			flagProvided = "noF"
+			flag.SetValue("noF")
 		} else {
-			flagProvided = "f"
+			flag.SetValue("f")
 		}
 	} else {
-		flagProvided = "d"
+		flag.SetValue("d")
 	}
+	fmt.Println(flag.GetValue())
 	var db *sql.DB
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
-		services.HandleGetRequest(w, r, storage, db, flagProvided)
+		services.HandleGetRequest(w, r, storage)
 	})
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		services.Ping(db)
 	})
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		services.HandlePostRequest(w, r, storage, conf.BaseURL, db, flagProvided)
+		services.HandlePostRequest(w, r, storage, conf.BaseURL)
 	})
 	r.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
 		services.ShortenHandler(w, r, storage, conf.BaseURL)

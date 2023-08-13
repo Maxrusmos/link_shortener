@@ -8,27 +8,30 @@ import (
 	config "link_shortener/internal/configs"
 	"link_shortener/internal/dbwork"
 	filework "link_shortener/internal/fileWork"
+	"link_shortener/internal/flagpkg"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
 	"net/http"
 	"strings"
 )
 
-func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, db *sql.DB, flagProvided string) {
+var conf = config.GetConfig()
+var db, err = dbwork.Connect(conf.DBConnect)
+
+func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
 	var originalURL string
 	var err error
+	flag := flagpkg.GetSharedFlag().GetValue()
 
-	if flagProvided == "d" {
+	if flag == "d" {
 		originalURL, err = dbwork.GetOriginalURL(db, id)
 		fmt.Println(originalURL)
 		if err != nil {
 			fmt.Print("err")
-		} else {
-			fmt.Println(originalURL)
 		}
 	} else {
-		if flagProvided == "f" {
+		if flag == "f" {
 			conf := config.GetConfig()
 			originalURL, err = filework.FindOriginURL(conf.FileStore, id)
 			if err != nil {
@@ -49,23 +52,23 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string, db *sql.DB, flagProvided string) {
+func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-
 	var shortURL string
-
 	originalURL := strings.ReplaceAll(string(body), "\"", "")
 	shortURL = shortenurl.Shortener(originalURL)
 
-	if flagProvided == "d" {
+	flag := flagpkg.GetSharedFlag().GetValue()
+
+	if flag == "d" {
 		dbwork.CreateTables(db)
 		dbwork.AddURL(db, shortURL, originalURL)
 	} else {
-		if flagProvided == "f" {
+		if flag == "f" {
 			conf := config.GetConfig()
 			urlToWrite := filework.JSONURLs{
 				ShortURL:  shortURL,

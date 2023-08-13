@@ -22,6 +22,8 @@ func Connect(connectionString string) (*sql.DB, error) {
 	return db, nil
 }
 
+// user=postgres password=490Sutud dbname=link-shortener sslmode=disable
+
 const createTableQuery = `CREATE TABLE IF NOT EXISTS urls (
 	id SERIAL PRIMARY KEY,
 	shortURL TEXT UNIQUE,
@@ -33,9 +35,7 @@ func CreateTables(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-
 	log.Println("Tables created")
-
 	return nil
 }
 
