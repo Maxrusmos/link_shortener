@@ -29,6 +29,7 @@ func TestLoggingMiddleware(t *testing.T) {
 	middleware.ServeHTTP(recorder, req)
 
 	resp := recorder.Result()
+	resp.Body.Close()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -72,6 +73,7 @@ func TestCompressionMiddleware(t *testing.T) {
 	middleware.ServeHTTP(recorder, req)
 
 	resp := recorder.Result()
+	resp.Body.Close()
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
