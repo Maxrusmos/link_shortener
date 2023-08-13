@@ -2,7 +2,6 @@ package filework
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -21,7 +20,7 @@ func TestWriteURLsToFile(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	fileData, err := ioutil.ReadFile(filename)
+	fileData, err := os.ReadFile(filename)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
