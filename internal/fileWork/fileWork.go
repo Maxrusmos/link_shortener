@@ -53,5 +53,5 @@ func FindOriginURL(filename string, shortURL string) (string, error) {
 	if err := scanner.Err(); err != nil {
 		return "", err
 	}
-	return "", fmt.Errorf("Сокращенный URL не найден")
+	return "", err
 }
