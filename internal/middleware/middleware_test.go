@@ -3,8 +3,8 @@ package middleware
 import (
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -34,11 +34,25 @@ func TestLoggingMiddleware(t *testing.T) {
 
 	body, _ := io.ReadAll(resp.Body)
 	assert.Equal(t, "Hello, World!", string(body))
+
+	// loggedFields := logger.With(
+	// 	zap.String("uri", req.URL.Path),
+	// 	zap.String("method", req.Method),
+	// 	zap.Int("status", resp.StatusCode),
+	// 	zap.Int64("size", resp.ContentLength),
+	// 	zap.Duration("elapsed", time.Since(time.Now())),
+	// )
+
+	// assert.Equal(t, "/test", loggedFields.Check(zap.String("1", "uri")))
+	// assert.Equal(t, "GET", loggedFields.Check(zap.String("method")))
+	// assert.Equal(t, http.StatusOK, loggedFields.Check(zap.Int("status")))
+	// assert.Equal(t, int64(len("Hello, World!")), loggedFields.Check(zap.Int64("size")))
+	// assert.True(t, loggedFields.Check(zap.Duration("elapsed")).Duration > 0)
 }
 
 func TestCompressionMiddleware(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		w.Write(body)
 	})
 
@@ -61,6 +75,25 @@ func TestCompressionMiddleware(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	assert.Equal(t, payload, string(body))
+}
+
+func compress(s string) string {
+	var b bytes.Buffer
+	w := gzip.NewWriter(&b)
+	w.Write([]byte(s))
+	w.Close()
+	return b.String()
+}
+
+func readResponseBody(resp *http.Response) string {
+	body, _ := io.ReadAll(resp.Body)
+	return string(body)
+}
+
+type errorReader struct{}
+
+func (er *errorReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("error reading request body")
 }
