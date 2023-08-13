@@ -49,6 +49,7 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Location", originalURL)
+	fmt.Println("HEADER:::", w.Header().Get("Location"))
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
