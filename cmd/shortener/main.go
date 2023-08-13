@@ -28,7 +28,7 @@ func main() {
 	r := chi.NewRouter()
 	flag.StringVar(&conf.Address, "a", "localhost:8080", "HTTP server address")
 	flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "Base address for shortened URL")
-	flag.StringVar(&conf.FileStore, "f", "", "File storage")
+	flag.StringVar(&conf.FileStore, "f", "short-url-db.json", "File storage")
 	// short-url-db.json
 	flag.StringVar(&conf.DBConnect, "d", "", "db Connection String")
 	// user=postgres password=490Sutud dbname=link-shortener sslmode=disable
