@@ -28,7 +28,7 @@ func TestHandleGetRequest(t *testing.T) {
 }
 
 func TestHandlePostRequest(t *testing.T) {
-	body := strings.NewReader(`"https://example.com"`)
+	body := strings.NewReader("https://example.com")
 	req, err := http.NewRequest("POST", "/", body)
 	if err != nil {
 		t.Fatal(err)
