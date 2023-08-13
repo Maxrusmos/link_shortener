@@ -3,7 +3,7 @@ package filework
 import (
 	"bufio"
 	"encoding/json"
-	"link_shortener/internal/storage"
+	"fmt"
 	"os"
 )
 
@@ -12,43 +12,8 @@ type JSONURLs struct {
 	OriginURL string `json:"originURL"`
 }
 
-func CheckIfURLExistsInFile(filename string, urls JSONURLs) (bool, error) {
-	existingData, err := ReadJSONFile(filename)
-	if err != nil {
-		return false, err
-	}
-	for _, d := range existingData {
-		if d.ShortURL == urls.ShortURL && d.OriginURL == urls.OriginURL {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
-func ReadJSONFile(filename string) ([]JSONURLs, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	var data []JSONURLs
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		var d JSONURLs
-		err := json.Unmarshal(scanner.Bytes(), &d)
-		if err != nil {
-			return nil, err
-		}
-		data = append(data, d)
-	}
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-	return data, nil
-}
-
 func WriteURLsToFile(filename string, dataToWrite JSONURLs) error {
+	fmt.Println(filename, dataToWrite)
 	data, err := json.Marshal(dataToWrite)
 	if err != nil {
 		return err
@@ -60,14 +25,6 @@ func WriteURLsToFile(filename string, dataToWrite JSONURLs) error {
 		return err
 	}
 
-	// isExist, err := CheckIfURLExistsInFile(filename, dataToWrite)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// if isExist {
-	// 	return nil
-	// }
 	defer file.Close()
 	_, err = file.WriteString(string(data) + "\n")
 	if err != nil {
@@ -76,10 +33,10 @@ func WriteURLsToFile(filename string, dataToWrite JSONURLs) error {
 	return nil
 }
 
-func ReadDataFromFile(filename string, storage storage.URLStorage) error {
+func FindOriginURL(filename string, shortURL string) (string, error) {
 	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
@@ -87,15 +44,14 @@ func ReadDataFromFile(filename string, storage storage.URLStorage) error {
 		var data JSONURLs
 		err := json.Unmarshal(scanner.Bytes(), &data)
 		if err != nil {
-			return err
+			return "", err
 		}
-		err = storage.AddURL(data.ShortURL, data.OriginURL)
-		if err != nil {
-			return err
+		if data.ShortURL == shortURL {
+			return data.OriginURL, nil
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return "", fmt.Errorf("Сокращенный URL не найден")
 }

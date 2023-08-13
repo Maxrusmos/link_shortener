@@ -21,3 +21,43 @@ func Connect(connectionString string) (*sql.DB, error) {
 
 	return db, nil
 }
+
+const createTableQuery = `CREATE TABLE IF NOT EXISTS urls (
+	id SERIAL PRIMARY KEY,
+	shortURL TEXT UNIQUE,
+	originalURL TEXT
+  )`
+
+func CreateTables(db *sql.DB) error {
+	_, err := db.Exec(createTableQuery)
+	if err != nil {
+		return err
+	}
+
+	log.Println("Tables created")
+
+	return nil
+}
+
+func AddURL(db *sql.DB, shortURL, originalURL string) error {
+	_, err := db.Exec("INSERT INTO urls (shortURL, originalURL) VALUES ($1, $2)", shortURL, originalURL)
+	if err != nil {
+		return err
+	}
+
+	log.Println("URL added to database")
+
+	return nil
+}
+
+func GetOriginalURL(db *sql.DB, shortURL string) (string, error) {
+	var originalURL string
+	err := db.QueryRow("SELECT originalURL FROM urls WHERE shortURL = $1", shortURL).Scan(&originalURL)
+	if err != nil {
+		return "", err
+	}
+
+	log.Println("Original URL retrieved from database")
+
+	return originalURL, nil
+}
