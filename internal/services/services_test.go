@@ -14,7 +14,7 @@ import (
 var URLMap = storage.NewMapURLStorage()
 
 func TestHandleGetRequest(t *testing.T) {
-	URLMap.AddURL("a9b9f043", "http://example.com")
+	URLMap.AddURL("c984d06a", "http://example.com")
 	req, err := http.NewRequest("GET", "/c984d06a", nil)
 	if err != nil {
 		t.Fatal(err)
