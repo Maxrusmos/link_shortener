@@ -31,6 +31,9 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 		if flagProvided == "f" {
 			conf := config.GetConfig()
 			originalURL, err = filework.FindOriginURL(conf.FileStore, id)
+			if err != nil {
+				fmt.Println("err")
+			}
 		} else {
 			originalURL, err = storage.GetURL(id)
 			fmt.Println(storage)
