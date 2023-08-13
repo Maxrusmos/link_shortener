@@ -3,9 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	config "link_shortener/internal/configs"
-	"link_shortener/internal/dbwork"
 	"link_shortener/internal/storage"
 	"time"
 
@@ -47,19 +45,6 @@ func main() {
 		flagProvided = "d"
 	}
 	var db *sql.DB
-
-	switch flagProvided {
-	case "f":
-		fmt.Println("f")
-	case "d":
-		db, err = dbwork.Connect(conf.DBConnect)
-		if err != nil {
-			logger.Error("failed DB connection", zap.Error(err))
-		}
-		fmt.Println("d")
-	case "noF":
-		fmt.Println("noF")
-	}
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, storage, db, flagProvided)

@@ -36,7 +36,6 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 			}
 		} else {
 			originalURL, err = storage.GetURL(id)
-			fmt.Println(storage)
 			if err != nil {
 				http.Error(w, "Invalid URL", http.StatusBadRequest)
 				return

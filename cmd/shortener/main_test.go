@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"database/sql"
-	"fmt"
 	config "link_shortener/internal/configs"
+	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/services"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
@@ -27,29 +27,49 @@ func TestHandleGetRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	URLMap.AddURL("test", "http://example.com")
+	URLMap.AddURL("a9b9f043", "http://example.com")
 
-	req, err := http.NewRequest("GET", "/test", nil)
+	req, err := http.NewRequest("GET", "/a9b9f043", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	//без флагов
+	handlerNof := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, URLMap, testDB, "noF")
 	})
-
-	handler.ServeHTTP(rr, req)
-
+	handlerNof.ServeHTTP(rr, req)
 	if rr.Code != http.StatusTemporaryRedirect {
 		t.Errorf("handleGetRequest returned wrong status code: got %v want %v", rr.Code, http.StatusTemporaryRedirect)
 	}
+
+	// флаг f
+	handlerF := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		services.HandleGetRequest(w, r, URLMap, testDB, "f")
+	})
+	handlerF.ServeHTTP(rr, req)
+	if rr.Code != http.StatusTemporaryRedirect {
+		t.Errorf("handleGetRequest returned wrong status code: got %v want %v", rr.Code, http.StatusTemporaryRedirect)
+	}
+
+	// флаг d
+	handlerD := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		services.HandleGetRequest(w, r, URLMap, testDB, "d")
+	})
+	handlerD.ServeHTTP(rr, req)
+	if rr.Code != http.StatusTemporaryRedirect {
+		t.Errorf("handleGetRequest returned wrong status code: got %v want %v", rr.Code, http.StatusTemporaryRedirect)
+	}
+	///////////
 
 	expectedLocation := "http://example.com"
 	location := rr.Header().Get("Location")
 	if location != expectedLocation {
 		t.Errorf("handleGetRequest returned unexpected location header: got %v want %v", location, expectedLocation)
 	}
+
 	_, err = testDB.Exec("DROP TABLE links")
 	if err != nil {
 		t.Fatal(err)
@@ -72,15 +92,34 @@ func TestHandleGetRequestInvalidURL(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+	//без флага
+	handlerNof := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, URLMap, testDB, "noF")
 	})
-
-	handler.ServeHTTP(rr, req)
-
+	handlerNof.ServeHTTP(rr, req)
 	if rr.Code != http.StatusBadRequest {
 		t.Errorf("handleGetRequest returned wrong status code: got %v want %v", rr.Code, http.StatusBadRequest)
 	}
+
+	// флаг f
+	handlerF := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		services.HandleGetRequest(w, r, URLMap, testDB, "f")
+	})
+	handlerF.ServeHTTP(rr, req)
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("handleGetRequest returned wrong status code: got %v want %v", rr.Code, http.StatusBadRequest)
+	}
+
+	// флаг d
+	handlerD := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		services.HandleGetRequest(w, r, URLMap, testDB, "d")
+	})
+	handlerD.ServeHTTP(rr, req)
+	if rr.Code != http.StatusBadRequest {
+		t.Errorf("handleGetRequest returned wrong status code: got %v want %v", rr.Code, http.StatusBadRequest)
+	}
+
 	_, err = testDB.Exec("DROP TABLE links")
 	if err != nil {
 		t.Fatal(err)
@@ -111,35 +150,72 @@ func TestHandlePostRequest(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	var shortURL, originalURL string
+
+	// нет флага
+	handlerNof := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		services.HandlePostRequest(w, r, URLMap, config.GetConfig().BaseURL, testDB, "noF")
 	})
-
-	handler.ServeHTTP(rr, req)
-
+	handlerNof.ServeHTTP(rr, req)
 	if rr.Code != http.StatusCreated {
 		t.Errorf("handlePostRequest returned wrong status code: got %v want %v", rr.Code, http.StatusCreated)
 	}
-
-	var shortURL, originalURL string
-	err = testDB.QueryRow("SELECT shortURL, originalURL FROM links WHERE shortURL='a9b9f043'").Scan(&shortURL, &originalURL)
+	response := strings.TrimSuffix(rr.Body.String(), "\n")
+	shortURL = strings.TrimPrefix(response, "http://localhost:8080/")
+	originalURL, err = URLMap.GetURL(shortURL)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	if originalURL != "http://example.com" {
+		t.Errorf("handlePostRequest added wrong original URL to map: got %v want %v", originalURL, "http://example.com")
+	}
+
+	// флаг f
+	handlerF := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		services.HandlePostRequest(w, r, URLMap, config.GetConfig().BaseURL, testDB, "f")
+	})
+	handlerF.ServeHTTP(rr, req)
+	if rr.Code != http.StatusCreated {
+		t.Errorf("handleGetRequest returned wrong status code: got %v want %v", rr.Code, http.StatusCreated)
+	}
+
+	conf := config.GetConfig()
+	urlToWrite := filework.JSONURLs{
+		ShortURL:  "a9b9f043",
+		OriginURL: "http://example.com",
+	}
+	filework.WriteURLsToFile(conf.FileStore, urlToWrite)
+	originalURL, err = filework.FindOriginURL(conf.FileStore, "a9b9f043")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if originalURL != "http://example.com" {
+		t.Errorf("handlePostRequest added wrong original URL to map: got %v want %v", originalURL, "http://example.com")
+	}
+
+	// флаг d
+	handlerD := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		services.HandlePostRequest(w, r, URLMap, config.GetConfig().BaseURL, testDB, "d")
+	})
+	handlerD.ServeHTTP(rr, req)
+	if rr.Code != http.StatusCreated {
+		t.Errorf("handleGetRequest returned wrong status code: got %v want %v", rr.Code, http.StatusCreated)
+	}
+
+	err = testDB.QueryRow("SELECT shortURL, originalURL FROM links WHERE shortURL='a9b9f043'").Scan(&shortURL, &originalURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if originalURL != "http://example.com" {
+		t.Errorf("handlePostRequest added wrong original URL to map: got %v want %v", originalURL, "http://example.com")
+	}
+
 	expectedResponse := "http://localhost:8080/a9b9f043"
-	response := strings.TrimSuffix(rr.Body.String(), "\n")
 	if response != expectedResponse {
 		t.Errorf("handlePostRequest returned unexpected response body: got %v want %v", response, expectedResponse)
 	}
 
-	shortURL = strings.TrimPrefix(response, "http://localhost:8080/")
-	originalURL, er := URLMap.GetURL(shortURL)
-	fmt.Println(er)
-
-	if originalURL != "http://example.com" {
-		t.Errorf("handlePostRequest added wrong original URL to map: got %v want %v", originalURL, "http://example.com")
-	}
 	_, err = testDB.Exec("DROP TABLE links")
 	if err != nil {
 		t.Fatal(err)
