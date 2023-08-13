@@ -1,43 +1,56 @@
 package dbwork
 
 import (
-	"fmt"
-	"log"
+	"database/sql"
 	"testing"
 
 	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestAddURL(t *testing.T) {
-	testdb, err := Connect("user=postgres password=490Sutud dbname=testDB sslmode=disable")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer testdb.Close()
+func CreateTestTables(db *sql.DB, createTableQuery string) error {
+	_, err := db.Exec(createTableQuery)
+	return err
+}
 
-	fmt.Println("ff")
+func DropTestTables(db *sql.DB) error {
+	_, err := db.Exec("DROP TABLE IF EXISTS test")
+	return err
+}
+func TestDBWork(t *testing.T) {
+	// Подключение к тестовой базе данных
+	connStr := "user=postgres password=490Sutud dbname=testDB sslmode=disable"
+	testDB, err := sql.Open("postgres", connStr)
+	assert.NoError(t, err, "Failed to connect to test database")
+	defer testDB.Close()
 
-	_, err = testdb.Exec("CREATE TABLE IF NOT EXISTS urls (id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)")
+	// Создание тестовых таблиц
+	const createTableQuery = `CREATE TABLE IF NOT EXISTS test ( id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)`
+	err = CreateTestTables(testDB, createTableQuery)
+	assert.NoError(t, err, "Failed to create table")
 
-	log.Println("Table created")
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Добавление и получение URL
+	shortURL := "c504216b"
+	originalURL := "https://practicum.ru"
+	err = AddURL(testDB, shortURL, originalURL)
+	assert.NoError(t, err, "Failed to add URL")
 
-	shortURL := "a9b9f043"
-	originalURL := "https://example.com"
+	retrievedURL, err := GetOriginalURL(testDB, shortURL)
+	assert.NoError(t, err, "Failed to get original URL")
+	assert.Equal(t, originalURL, retrievedURL, "Retrieved URL does not match")
 
-	err = AddURL(testdb, shortURL, originalURL)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Очистка тестовой базы данных (нужно предварительно удалить таблицы)
+	_, err = testDB.Exec("DROP TABLE IF EXISTS test")
+	assert.NoError(t, err, "Failed to drop tables")
+}
 
-	retrievedURL, err := GetOriginalURL(testdb, shortURL)
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestConnect(t *testing.T) {
+	connStr := "user=postgres password=490Sutud dbname=testDB sslmode=disable" // Замените на параметры своей тестовой базы данных
+	db, err := Connect(connStr)
+	assert.NoError(t, err, "Failed to connect to test database")
+	defer db.Close()
 
-	if retrievedURL != originalURL {
-		t.Errorf("Expected retrieved URL to be %s, but got %s", originalURL, retrievedURL)
-	}
+	// Проверка соединения с базой данных
+	err = db.Ping()
+	assert.NoError(t, err, "Failed to ping database")
 }

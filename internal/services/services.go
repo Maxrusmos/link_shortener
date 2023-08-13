@@ -53,6 +53,10 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 }
 
 func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -65,7 +69,11 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
-		dbwork.CreateTables(db)
+		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
+			id SERIAL PRIMARY KEY,
+			shortURL TEXT UNIQUE,
+			originalURL TEXT
+		  )`)
 		dbwork.AddURL(db, shortURL, originalURL)
 	} else {
 		if flag == "f" {

@@ -24,13 +24,13 @@ func Connect(connectionString string) (*sql.DB, error) {
 
 // user=postgres password=490Sutud dbname=link-shortener sslmode=disable
 
-const createTableQuery = `CREATE TABLE IF NOT EXISTS urls (
-	id SERIAL PRIMARY KEY,
-	shortURL TEXT UNIQUE,
-	originalURL TEXT
-  )`
+// const createTableQuery = `CREATE TABLE IF NOT EXISTS urls (
+// 	id SERIAL PRIMARY KEY,
+// 	shortURL TEXT UNIQUE,
+// 	originalURL TEXT
+//   )`
 
-func CreateTables(db *sql.DB) error {
+func CreateTables(db *sql.DB, createTableQuery string) error {
 	_, err := db.Exec(createTableQuery)
 	if err != nil {
 		return err
