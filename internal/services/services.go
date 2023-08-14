@@ -31,19 +31,19 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 			fmt.Print("err")
 		}
 	} else {
-		if flag == "f" {
-			conf := config.GetConfig()
-			originalURL, err = filework.FindOriginURL(conf.FileStore, id)
-			if err != nil {
-				fmt.Println("err")
-			}
-		} else {
-			originalURL, err = storage.GetURL(id)
-			if err != nil {
-				http.Error(w, "Invalid URL", http.StatusBadRequest)
-				return
-			}
+		// if flag == "f" {
+		conf := config.GetConfig()
+		originalURL, err = filework.FindOriginURL(conf.FileStore, id)
+		if err != nil {
+			fmt.Println("err")
 		}
+		// } else {
+		originalURL, err = storage.GetURL(id)
+		if err != nil {
+			http.Error(w, "Invalid URL", http.StatusBadRequest)
+			return
+		}
+		// }
 
 	}
 
@@ -77,20 +77,20 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		  )`)
 		dbwork.AddURL(db, shortURL, originalURL)
 	} else {
-		if flag == "f" {
-			conf := config.GetConfig()
-			urlToWrite := filework.JSONURLs{
-				ShortURL:  shortURL,
-				OriginURL: originalURL,
-			}
-			filework.WriteURLsToFile(conf.FileStore, urlToWrite)
-		} else {
-			shortURL, err = storage.AddURLSH(originalURL)
-			if err != nil {
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
+		// if flag == "f" {
+		conf := config.GetConfig()
+		urlToWrite := filework.JSONURLs{
+			ShortURL:  shortURL,
+			OriginURL: originalURL,
 		}
+		filework.WriteURLsToFile(conf.FileStore, urlToWrite)
+		// } else {
+		shortURL, err = storage.AddURLSH(originalURL)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		// }
 
 	}
 
