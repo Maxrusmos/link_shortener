@@ -68,38 +68,35 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	originalURL := strings.ReplaceAll(string(body), "\"", "")
 	shortURL = shortenurl.Shortener(originalURL)
 
-	// flag := flagpkg.GetSharedFlag().GetValue()
+	flag := flagpkg.GetSharedFlag().GetValue()
 
-	// if flag == "d" {
-	// if err != nil {
-	// 	fmt.Print("err")
-	// }
-	stmt, err := db.Prepare(`INSERT INTO urls (shortURL, originalURL) VALUES ($1, $2)`)
-	if err != nil {
-		log.Fatal(err)
+	if flag == "d" {
+		stmt, err := db.Prepare(`INSERT INTO urls (shortURL, originalURL) VALUES ($1, $2)`)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer stmt.Close()
+		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)`)
+		_, err = stmt.Exec(shortURL, originalURL)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// dbwork.AddURL(db, shortURL, originalURL)
 	}
-	defer stmt.Close()
-	dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)`)
-	_, err = stmt.Exec(shortURL, originalURL)
-	if err != nil {
-		log.Fatal(err)
+	if flag == "f" {
+		conf := config.GetConfig()
+		urlToWrite := filework.JSONURLs{
+			ShortURL:  shortURL,
+			OriginURL: originalURL,
+		}
+		filework.WriteURLsToFile(conf.FileStore, urlToWrite)
 	}
-	// dbwork.AddURL(db, shortURL, originalURL)
-	// } else {
-	// if flag == "f" {
-	conf := config.GetConfig()
-	urlToWrite := filework.JSONURLs{
-		ShortURL:  shortURL,
-		OriginURL: originalURL,
-	}
-	filework.WriteURLsToFile(conf.FileStore, urlToWrite)
-	// } else {
-	shortURL, err = storage.AddURLSH(originalURL)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-		// }
-		// }
+	if flag == "noF" {
+		shortURL, err = storage.AddURLSH(originalURL)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
