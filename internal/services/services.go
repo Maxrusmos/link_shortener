@@ -134,9 +134,6 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
-		if err != nil {
-			fmt.Print("err")
-		}
 		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
 			id SERIAL PRIMARY KEY,
 			shortURL TEXT UNIQUE,
