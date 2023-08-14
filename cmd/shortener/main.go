@@ -29,18 +29,16 @@ func main() {
 	flag.StringVar(&conf.Address, "a", "localhost:8080", "HTTP server address")
 	flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "Base address for shortened URL")
 	flag.StringVar(&conf.FileStore, "f", "short-url-db.json", "File storage")
-	// short-url-db.json
-	flag.StringVar(&conf.DBConnect, "d", "", "db Connection String")
-	// user=postgres password=490Sutud dbname=link-shortener sslmode=disable
+	flag.StringVar(&conf.DBConnect, "d", "user=postgres password=490Sutud dbname=link-shortener sslmode=disable", "db Connection String")
 	flag.Parse()
 
 	storage := storage.NewMapURLStorage()
 	flag := flagpkg.GetSharedFlag()
-	if conf.DBConnect == "" {
-		if conf.FileStore == "" {
-			flag.SetValue("noF")
-		} else {
+	if conf.DBConnect == "user=postgres password=490Sutud dbname=link-shortener sslmode=disable" {
+		if conf.FileStore != "short-url-db.json" {
 			flag.SetValue("f")
+		} else {
+			flag.SetValue("noF")
 		}
 	} else {
 		flag.SetValue("d")
