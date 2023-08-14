@@ -15,34 +15,36 @@ import (
 	"strings"
 )
 
+var conf = config.GetConfig()
+var db, err = dbwork.Connect(conf.DBConnect)
+
 func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
 	var originalURL string
-	// var err error
-	var conf = config.GetConfig()
-	// flag := flagpkg.GetSharedFlag().GetValue()
+	var err error
+	flag := flagpkg.GetSharedFlag().GetValue()
 
-	// if flag == "d" {
-	var db, err = dbwork.Connect(conf.DBConnect)
-	originalURL, err = dbwork.GetOriginalURL(db, id)
-	fmt.Println(originalURL)
-	if err != nil {
-		fmt.Print("err")
+	if flag == "d" {
+		fmt.Println(id)
+		originalURL, err = dbwork.GetOriginalURL(db, id)
+		fmt.Println("original ::: ", originalURL)
+		if err != nil {
+			fmt.Print("err")
+		}
 	}
-	// }
-	// if flag == "f" {
-	originalURL, err = filework.FindOriginURL(conf.FileStore, id)
-	if err != nil {
-		fmt.Println("err")
+	if flag == "f" {
+		originalURL, err = filework.FindOriginURL(conf.FileStore, id)
+		if err != nil {
+			fmt.Println("err")
+		}
 	}
-	// }
-	// if flag == "noF" {
-	originalURL, err = storage.GetURL(id)
-	if err != nil {
-		http.Error(w, "Invalid URL", http.StatusBadRequest)
-		return
+	if flag == "noF" {
+		originalURL, err = storage.GetURL(id)
+		if err != nil {
+			http.Error(w, "Invalid URL", http.StatusBadRequest)
+			return
+		}
 	}
-	// }
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Location", originalURL)
@@ -67,17 +69,15 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
-		var conf = config.GetConfig()
-		var db, err = dbwork.Connect(conf.DBConnect)
-		if err != nil {
-			fmt.Print("err")
-		}
-		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
-			id SERIAL PRIMARY KEY,
-			shortURL TEXT UNIQUE,
-			originalURL TEXT
-		  )`)
-		dbwork.AddURL(db, shortURL, originalURL)
+		// if err != nil {
+		// 	fmt.Print("err")
+		// }
+		// dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS ur (
+		// 	id SERIAL PRIMARY KEY,
+		// 	shortURL TEXT UNIQUE,
+		// 	originalURL TEXT
+		//   )`)
+		// dbwork.AddURL(db, shortURL, originalURL)
 	} else {
 		// if flag == "f" {
 		conf := config.GetConfig()
@@ -135,8 +135,6 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
-		var conf = config.GetConfig()
-		var db, err = dbwork.Connect(conf.DBConnect)
 		if err != nil {
 			fmt.Print("err")
 		}
