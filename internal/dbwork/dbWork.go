@@ -51,6 +51,5 @@ func GetOriginalURL(db *sql.DB, shortURL string) (string, error) {
 		fmt.Println(err)
 		return "error", err
 	}
-
 	return originalURL, nil
 }

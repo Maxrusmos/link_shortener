@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -25,11 +26,17 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
-		fmt.Println(id)
-		originalURL, err = dbwork.GetOriginalURL(db, id)
+		row := db.QueryRowContext(context.Background(),
+			"SELECT originalURL FROM urls WHERE shortURL = $1", id)
+		err = row.Scan(&originalURL)
 		if err != nil {
-			fmt.Print("err")
+			panic(err)
 		}
+		fmt.Println(originalURL)
+		// originalURL, err = dbwork.GetOriginalURL(db, id)
+		// if err != nil {
+		// 	fmt.Print("err")
+		// }
 	}
 	if flag == "f" {
 		originalURL, err = filework.FindOriginURL(conf.FileStore, id)
@@ -47,7 +54,6 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Location", originalURL)
-	fmt.Println("HEADER:::", w.Header().Get("Location"))
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
