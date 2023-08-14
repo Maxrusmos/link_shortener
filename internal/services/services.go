@@ -31,7 +31,7 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 			fmt.Print("err")
 		}
 	} else {
-		if flag == "f" {
+		if flag == "f" || flag == "noF" {
 			conf := config.GetConfig()
 			originalURL, err = filework.FindOriginURL(conf.FileStore, id)
 			if err != nil {
@@ -77,7 +77,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		  )`)
 		dbwork.AddURL(db, shortURL, originalURL)
 	} else {
-		if flag == "f" {
+		if flag == "f" || flag == "noF" {
 			conf := config.GetConfig()
 			urlToWrite := filework.JSONURLs{
 				ShortURL:  shortURL,
