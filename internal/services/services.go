@@ -83,21 +83,21 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		}
 		// dbwork.AddURL(db, shortURL, originalURL)
 	}
-	if flag == "f" {
-		conf := config.GetConfig()
-		urlToWrite := filework.JSONURLs{
-			ShortURL:  shortURL,
-			OriginURL: originalURL,
-		}
-		filework.WriteURLsToFile(conf.FileStore, urlToWrite)
+	// if flag == "f" {
+	conf := config.GetConfig()
+	urlToWrite := filework.JSONURLs{
+		ShortURL:  shortURL,
+		OriginURL: originalURL,
 	}
-	if flag == "noF" {
-		shortURL, err = storage.AddURLSH(originalURL)
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
+	filework.WriteURLsToFile(conf.FileStore, urlToWrite)
+	// }
+	// if flag == "noF" {
+	shortURL, err = storage.AddURLSH(originalURL)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
+	// }
 
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
