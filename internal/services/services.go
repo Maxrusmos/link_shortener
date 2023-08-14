@@ -93,7 +93,6 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 			return
 		}
 		// }
-
 	}
 
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
@@ -131,11 +130,45 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	shortURL, err := storage.AddURLSH(url.URL)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+
+	var shortURL = shortenurl.Shortener(url.URL)
+	flag := flagpkg.GetSharedFlag().GetValue()
+
+	if flag == "d" {
+		var conf = config.GetConfig()
+		var db, err = dbwork.Connect(conf.DBConnect)
+		if err != nil {
+			fmt.Print("err")
+		}
+		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
+			id SERIAL PRIMARY KEY,
+			shortURL TEXT UNIQUE,
+			originalURL TEXT
+		  )`)
+		dbwork.AddURL(db, shortURL, url.URL)
+	} else {
+		// if flag == "f" {
+		conf := config.GetConfig()
+		urlToWrite := filework.JSONURLs{
+			ShortURL:  shortURL,
+			OriginURL: url.URL,
+		}
+		filework.WriteURLsToFile(conf.FileStore, urlToWrite)
+		// } else {
+		shortURL, err = storage.AddURLSH(url.URL)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		// }
 	}
+
+	// shortURL, err = storage.AddURLSH(url.URL)
+	// fmt.Println("short:", url)
+	// // if err != nil {
+	// // 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// // 	return
+	// // }
 	response := ShortURL{Result: baseURL + "/" + shortURL}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
