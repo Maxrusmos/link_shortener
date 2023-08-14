@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	config "link_shortener/internal/configs"
+	"link_shortener/internal/dbwork"
 	"link_shortener/internal/flagpkg"
 	"link_shortener/internal/storage"
 	"time"
@@ -44,12 +45,17 @@ func main() {
 		flag.SetValue("d")
 	}
 	fmt.Println(flag.GetValue())
+	// var db *sql.DB
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, storage)
 	})
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		services.Ping()
+		var db, err = dbwork.Connect(conf.DBConnect)
+		if err != nil {
+			fmt.Print("err")
+		}
+		services.Ping(db)
 	})
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		services.HandlePostRequest(w, r, storage, conf.BaseURL)

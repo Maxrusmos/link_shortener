@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,7 +27,6 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	if flag == "d" {
 		fmt.Println(id)
 		originalURL, err = dbwork.GetOriginalURL(db, id)
-		fmt.Println("original ::: ", originalURL)
 		if err != nil {
 			fmt.Print("err")
 		}
@@ -100,7 +100,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	w.Write([]byte(response))
 }
 
-func Ping() http.HandlerFunc {
+func Ping(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := db.Ping(); err != nil {
 			http.Error(w, "internal server error", http.StatusInternalServerError)
