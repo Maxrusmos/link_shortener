@@ -18,31 +18,31 @@ import (
 func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
 	var originalURL string
-	var err error
+	// var err error
 	var conf = config.GetConfig()
-	flag := flagpkg.GetSharedFlag().GetValue()
+	// flag := flagpkg.GetSharedFlag().GetValue()
 
-	if flag == "d" {
-		var db, err = dbwork.Connect(conf.DBConnect)
-		originalURL, err = dbwork.GetOriginalURL(db, id)
-		fmt.Println(originalURL)
-		if err != nil {
-			fmt.Print("err")
-		}
+	// if flag == "d" {
+	var db, err = dbwork.Connect(conf.DBConnect)
+	originalURL, err = dbwork.GetOriginalURL(db, id)
+	fmt.Println(originalURL)
+	if err != nil {
+		fmt.Print("err")
 	}
-	if flag == "f" {
-		originalURL, err = filework.FindOriginURL(conf.FileStore, id)
-		if err != nil {
-			fmt.Println("err")
-		}
+	// }
+	// if flag == "f" {
+	originalURL, err = filework.FindOriginURL(conf.FileStore, id)
+	if err != nil {
+		fmt.Println("err")
 	}
-	if flag == "noF" {
-		originalURL, err = storage.GetURL(id)
-		if err != nil {
-			http.Error(w, "Invalid URL", http.StatusBadRequest)
-			return
-		}
+	// }
+	// if flag == "noF" {
+	originalURL, err = storage.GetURL(id)
+	if err != nil {
+		http.Error(w, "Invalid URL", http.StatusBadRequest)
+		return
 	}
+	// }
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Location", originalURL)
@@ -78,7 +78,6 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 			originalURL TEXT
 		  )`)
 		dbwork.AddURL(db, shortURL, originalURL)
-		defer db.Close()
 	} else {
 		// if flag == "f" {
 		conf := config.GetConfig()
