@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	config "link_shortener/internal/configs"
@@ -35,6 +36,7 @@ func main() {
 
 	storage := storage.NewMapURLStorage()
 	flag := flagpkg.GetSharedFlag()
+	var db *sql.DB
 	if conf.DBConnect == "" {
 		if conf.FileStore != "" {
 			flag.SetValue("f")
@@ -43,18 +45,14 @@ func main() {
 		}
 	} else {
 		flag.SetValue("d")
+		db, err = dbwork.Connect(conf.DBConnect)
 	}
 	fmt.Println(flag.GetValue())
-	// var db *sql.DB
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, storage)
 	})
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		var db, err = dbwork.Connect(conf.DBConnect)
-		if err != nil {
-			fmt.Print("err")
-		}
 		services.Ping(db)
 	})
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
