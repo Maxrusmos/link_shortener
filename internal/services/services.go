@@ -65,7 +65,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	originalURL := strings.ReplaceAll(string(body), "\"", "")
 	shortURL = shortenurl.Shortener(originalURL)
 
-	flag := flagpkg.GetSharedFlag().GetValue()
+	// flag := flagpkg.GetSharedFlag().GetValue()
 
 	// if flag == "d" {
 	// if err != nil {
