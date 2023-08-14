@@ -15,9 +15,6 @@ import (
 	"strings"
 )
 
-var conf = config.GetConfig()
-var db, err = dbwork.Connect(conf.DBConnect)
-
 func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
 	var originalURL string
@@ -25,6 +22,8 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
+		var conf = config.GetConfig()
+		var db, err = dbwork.Connect(conf.DBConnect)
 		originalURL, err = dbwork.GetOriginalURL(db, id)
 		fmt.Println(originalURL)
 		if err != nil {
@@ -32,11 +31,11 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 		}
 	} else {
 		// if flag == "f" {
-		conf := config.GetConfig()
-		originalURL, err = filework.FindOriginURL(conf.FileStore, id)
-		if err != nil {
-			fmt.Println("err")
-		}
+		// conf := config.GetConfig()
+		// // originalURL, err = filework.FindOriginURL(conf.FileStore, id)
+		// if err != nil {
+		// 	fmt.Println("err")
+		// }
 		// } else {
 		originalURL, err = storage.GetURL(id)
 		if err != nil {
@@ -70,6 +69,11 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
+		var conf = config.GetConfig()
+		var db, err = dbwork.Connect(conf.DBConnect)
+		if err != nil {
+			fmt.Print("err")
+		}
 		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
 			id SERIAL PRIMARY KEY,
 			shortURL TEXT UNIQUE,
