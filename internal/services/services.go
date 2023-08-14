@@ -1,7 +1,6 @@
 package services
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -12,6 +11,7 @@ import (
 	"link_shortener/internal/flagpkg"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -26,14 +26,11 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
-		row := db.QueryRowContext(context.Background(),
-			"SELECT originalURL FROM urls WHERE shortURL = $1", id)
-		err = row.Scan(&originalURL)
+		originalURL, err = dbwork.GetOriginalURL(db, id)
 		if err != nil {
 			panic(err)
 		}
 		fmt.Println(originalURL)
-		// originalURL, err = dbwork.GetOriginalURL(db, id)
 		// if err != nil {
 		// 	fmt.Print("err")
 		// }
@@ -77,11 +74,16 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	// if err != nil {
 	// 	fmt.Print("err")
 	// }
-	// dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
-	// 	id SERIAL PRIMARY KEY,
-	// 	shortURL TEXT UNIQUE,
-	// 	originalURL TEXT
-	//   )`)
+	stmt, err := db.Prepare(`INSERT INTO urls (shortURL, originalURL) VALUES ($1, $2)`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)`)
+	_, err = stmt.Exec(shortURL, originalURL)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// dbwork.AddURL(db, shortURL, originalURL)
 	// } else {
 	// if flag == "f" {
