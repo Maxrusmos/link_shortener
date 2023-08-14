@@ -67,30 +67,30 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 
 	flag := flagpkg.GetSharedFlag().GetValue()
 
-	if flag == "d" {
-		// if err != nil {
-		// 	fmt.Print("err")
+	// if flag == "d" {
+	// if err != nil {
+	// 	fmt.Print("err")
+	// }
+	// dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
+	// 	id SERIAL PRIMARY KEY,
+	// 	shortURL TEXT UNIQUE,
+	// 	originalURL TEXT
+	//   )`)
+	// dbwork.AddURL(db, shortURL, originalURL)
+	// } else {
+	// if flag == "f" {
+	conf := config.GetConfig()
+	urlToWrite := filework.JSONURLs{
+		ShortURL:  shortURL,
+		OriginURL: originalURL,
+	}
+	filework.WriteURLsToFile(conf.FileStore, urlToWrite)
+	// } else {
+	shortURL, err = storage.AddURLSH(originalURL)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 		// }
-		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
-			id SERIAL PRIMARY KEY,
-			shortURL TEXT UNIQUE,
-			originalURL TEXT
-		  )`)
-		dbwork.AddURL(db, shortURL, originalURL)
-	} else {
-		// if flag == "f" {
-		conf := config.GetConfig()
-		urlToWrite := filework.JSONURLs{
-			ShortURL:  shortURL,
-			OriginURL: originalURL,
-		}
-		filework.WriteURLsToFile(conf.FileStore, urlToWrite)
-		// } else {
-		shortURL, err = storage.AddURLSH(originalURL)
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
 		// }
 	}
 
