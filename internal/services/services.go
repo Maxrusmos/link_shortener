@@ -24,8 +24,10 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	var err error
 	flag := flagpkg.GetSharedFlag().GetValue()
 
+	originalURL, err = dbwork.GetOriginalURL(db, id)
+
 	if flag == "d" {
-		originalURL, err = dbwork.GetOriginalURL(db, id)
+		// originalURL, err = dbwork.GetOriginalURL(db, id)
 		if err != nil {
 			panic(err)
 		}
@@ -67,12 +69,12 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	originalURL := strings.ReplaceAll(string(body), "\"", "")
 	shortURL = shortenurl.Shortener(originalURL)
 
-	flag := flagpkg.GetSharedFlag().GetValue()
+	// flag := flagpkg.GetSharedFlag().GetValue()
 
-	if flag == "d" {
-		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)`)
-		dbwork.AddURL(db, shortURL, originalURL)
-	}
+	// if flag == "d" {
+	// 	dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)`)
+	// 	dbwork.AddURL(db, shortURL, originalURL)
+	// }
 	// if flag == "f" {
 	conf := config.GetConfig()
 	urlToWrite := filework.JSONURLs{
