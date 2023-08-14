@@ -46,6 +46,14 @@ func main() {
 	} else {
 		flag.SetValue("d")
 		db, err = dbwork.Connect(conf.DBConnect)
+		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
+			id SERIAL PRIMARY KEY,
+			shortURL TEXT UNIQUE,
+			originalURL TEXT
+		  )`)
+		if err != nil {
+			fmt.Println("err")
+		}
 	}
 	fmt.Println(flag.GetValue())
 
