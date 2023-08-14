@@ -19,31 +19,29 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	id := strings.TrimPrefix(r.URL.Path, "/")
 	var originalURL string
 	var err error
+	var conf = config.GetConfig()
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
-		var conf = config.GetConfig()
 		var db, err = dbwork.Connect(conf.DBConnect)
 		originalURL, err = dbwork.GetOriginalURL(db, id)
 		fmt.Println(originalURL)
 		if err != nil {
 			fmt.Print("err")
 		}
-	} else {
-		// if flag == "f" {
-		// conf := config.GetConfig()
-		// // originalURL, err = filework.FindOriginURL(conf.FileStore, id)
-		// if err != nil {
-		// 	fmt.Println("err")
-		// }
-		// } else {
-		originalURL, err = storage.GetURL(id)
+	}
+	if flag == "f" {
+		originalURL, err = filework.FindOriginURL(conf.FileStore, id)
 		if err != nil {
-			http.Error(w, "Invalid URL", http.StatusBadRequest)
-			return
+			fmt.Println("err")
 		}
-		// }
-
+		if flag == "noF" {
+			originalURL, err = storage.GetURL(id)
+			if err != nil {
+				http.Error(w, "Invalid URL", http.StatusBadRequest)
+				return
+			}
+		}
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
