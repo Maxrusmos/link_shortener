@@ -1,7 +1,6 @@
 package services
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -101,7 +100,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	w.Write([]byte(response))
 }
 
-func Ping(db *sql.DB) http.HandlerFunc {
+func Ping() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := db.Ping(); err != nil {
 			http.Error(w, "internal server error", http.StatusInternalServerError)

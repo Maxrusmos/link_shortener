@@ -44,14 +44,13 @@ func main() {
 		flag.SetValue("d")
 	}
 	fmt.Println(flag.GetValue())
-	// var db *sql.DB
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, storage)
 	})
-	// r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-	// 	services.Ping(db)
-	// })
+	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+		services.Ping()
+	})
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		services.HandlePostRequest(w, r, storage, conf.BaseURL)
 	})
