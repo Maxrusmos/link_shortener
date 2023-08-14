@@ -71,12 +71,12 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		// if err != nil {
 		// 	fmt.Print("err")
 		// }
-		// dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS ur (
-		// 	id SERIAL PRIMARY KEY,
-		// 	shortURL TEXT UNIQUE,
-		// 	originalURL TEXT
-		//   )`)
-		// dbwork.AddURL(db, shortURL, originalURL)
+		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
+			id SERIAL PRIMARY KEY,
+			shortURL TEXT UNIQUE,
+			originalURL TEXT
+		  )`)
+		dbwork.AddURL(db, shortURL, originalURL)
 	} else {
 		// if flag == "f" {
 		conf := config.GetConfig()
