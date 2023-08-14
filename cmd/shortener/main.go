@@ -34,8 +34,8 @@ func main() {
 
 	storage := storage.NewMapURLStorage()
 	flag := flagpkg.GetSharedFlag()
-	if conf.DBConnect == "user=postgres password=490Sutud dbname=link-shortener sslmode=disable" {
-		if conf.FileStore != "short-url-db.json" {
+	if conf.DBConnect == "" {
+		if conf.FileStore != "" {
 			flag.SetValue("f")
 		} else {
 			flag.SetValue("noF")
