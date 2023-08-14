@@ -11,7 +11,6 @@ import (
 	"link_shortener/internal/flagpkg"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -71,17 +70,8 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	flag := flagpkg.GetSharedFlag().GetValue()
 
 	if flag == "d" {
-		stmt, err := db.Prepare(`INSERT INTO urls (shortURL, originalURL) VALUES ($1, $2)`)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer stmt.Close()
 		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (id SERIAL PRIMARY KEY, shortURL TEXT UNIQUE, originalURL TEXT)`)
-		_, err = stmt.Exec(shortURL, originalURL)
-		if err != nil {
-			log.Fatal(err)
-		}
-		// dbwork.AddURL(db, shortURL, originalURL)
+		dbwork.AddURL(db, shortURL, originalURL)
 	}
 	// if flag == "f" {
 	conf := config.GetConfig()
