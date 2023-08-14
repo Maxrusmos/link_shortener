@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	config "link_shortener/internal/configs"
-	"link_shortener/internal/dbwork"
 	"link_shortener/internal/flagpkg"
 	"link_shortener/internal/storage"
 	"time"
@@ -44,16 +43,6 @@ func main() {
 		}
 	} else {
 		flag.SetValue("d")
-		var db, err = dbwork.Connect(conf.DBConnect)
-		if err != nil {
-			fmt.Print("err")
-		}
-		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
-			id SERIAL PRIMARY KEY,
-			shortURL TEXT UNIQUE,
-			originalURL TEXT
-		  )`)
-		// dbwork.AddURL(db, shortURL, url.URL)
 	}
 	fmt.Println(flag.GetValue())
 	var db *sql.DB
