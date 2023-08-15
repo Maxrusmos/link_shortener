@@ -36,7 +36,7 @@ func main() {
 	var storageURL storage.URLStorage
 
 	if os.Getenv("DATABASE_DSN") == "" && conf.DBConnect == "" {
-		if conf.FileStore != "" {
+		if conf.FileStore != "" || os.Getenv("FILE_STORAGE_PATH") != "" {
 			log.Println("filework")
 			storageURL = storage.NewFileURLStorage(conf.FileStore)
 		} else {
