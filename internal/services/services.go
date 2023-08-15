@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	config "link_shortener/internal/configs"
+	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
 	"log"
@@ -47,13 +48,20 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	shortURL := shortenurl.Shortener(originalURL)
 	// fmt.Println(url.Parse(shortURL))
 
-	err = storage.AddURL(shortURL, originalURL)
-	if err != nil {
-		http.Error(w, "Failed to add URL ghgsdghsghdhsdhshdgh", http.StatusInternalServerError)
-		return
-	}
+	// err = storage.AddURL(shortURL, originalURL)
+	// if err != nil {
+	// 	http.Error(w, "Failed to add URL ghgsdghsghdhsdhshdgh", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
+	conf := config.GetConfig()
+	urlToWrite := filework.JSONURLs{
+		ShortURL:  shortURL,
+		OriginURL: originalURL,
+	}
+	filework.WriteURLsToFile(conf.FileStore, urlToWrite)
+
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
