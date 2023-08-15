@@ -69,6 +69,16 @@ func (m *MockURLStorage) AddURL(key string, url string) error {
 	return nil
 }
 
+func (m *MockURLStorage) AddURLSH(key string, url string) (string, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	if m.err != nil {
+		return "", m.err
+	}
+	m.urls[key] = url
+	return key, nil
+}
+
 func (m *MockURLStorage) GetURL(key string) (string, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

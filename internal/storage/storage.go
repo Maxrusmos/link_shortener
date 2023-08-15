@@ -14,12 +14,8 @@ import (
 type URLStorage interface {
 	AddURL(key string, url string) error
 	GetURL(key string) (string, error)
+	AddURLSH(url string) (string, error)
 	Ping() error
-}
-
-type URLStorageWithAddURLSH interface {
-	URLStorage
-	AddURLSH(key string) (string, error)
 }
 
 type MapURLStorage struct {
@@ -42,6 +38,14 @@ func (s *MapURLStorage) AddURL(key string, url string) error {
 	}
 	s.urls[key] = url
 	return nil
+}
+
+func (s *MapURLStorage) AddURLSH(url string) (string, error) {
+	shortURL := shortenurl.Shortener(url)
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.urls[shortURL] = url
+	return shortURL, nil
 }
 
 func (s *MapURLStorage) GetURL(key string) (string, error) {
@@ -86,6 +90,26 @@ func (s *FileURLStorage) AddURL(key string, url string) error {
 	return nil
 }
 
+func (s *FileURLStorage) AddURLSH(url string) (string, error) {
+	shortURL := shortenurl.Shortener(url)
+	log.Println("FileURLStorageADDURL")
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	urlToWrite := filework.JSONURLs{
+		ShortURL:  shortURL,
+		OriginURL: url,
+	}
+
+	err := filework.WriteURLsToFile(s.filePath, urlToWrite)
+	if err != nil {
+		log.Println("err is", err)
+		return "", err
+	}
+
+	return shortURL, nil
+}
+
 func (s *FileURLStorage) GetURL(key string) (string, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -121,6 +145,17 @@ func (s *DatabaseURLStorage) AddURL(key string, url string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return nil
+}
+
+func (s *DatabaseURLStorage) AddURLSH(url string) (string, error) {
+	shortURL := shortenurl.Shortener(url)
+	err := dbwork.AddURL(s.db, shortURL, url)
+	if err != nil {
+		return "", err
+	}
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	return shortURL, nil
 }
 
 func (s *DatabaseURLStorage) GetURL(key string) (string, error) {

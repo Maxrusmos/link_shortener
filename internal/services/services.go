@@ -53,9 +53,11 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	}
 
 	originalURL := strings.TrimSpace(string(body))
-	shortURL := shortenurl.Shortener(originalURL)
+	// shortURL := shortenurl.Shortener(originalURL)
+	var shortURL string
 
-	err = storage.AddURL(shortURL, originalURL)
+	shortURL, err = storage.AddURLSH(originalURL)
+	fmt.Println("shortURL after ADD:::", shortURL)
 	if err != nil {
 		http.Error(w, "Failed to add URL", http.StatusInternalServerError) // Обработка ошибки добавления URL
 		return
