@@ -90,12 +90,11 @@ func (s *FileURLStorage) AddURL(key string, url string) error {
 	}
 
 	file, err := os.OpenFile(s.filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-	defer file.Close()
 	_, err = file.WriteString(string(data) + "\n")
 	if err != nil {
 		return err
 	}
-
+	defer file.Close()
 	return nil
 }
 

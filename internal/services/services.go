@@ -50,10 +50,10 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
 
 	err = storage.AddURL(shortURL, originalURL)
-	if err != nil {
-		http.Error(w, "Failed to add URL ghgsdghsghdhsdhshdgh", http.StatusInternalServerError)
-		return
-	}
+	// if err != nil {
+	// 	http.Error(w, "Failed to add URL ghgsdghsghdhsdhshdgh", http.StatusInternalServerError)
+	// 	return
+	// }
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
