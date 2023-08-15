@@ -9,6 +9,7 @@ import (
 	"link_shortener/internal/storage"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -31,6 +32,14 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
+func isValidURL(u string) bool {
+	parsedURL, err := url.Parse(u)
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+		return false
+	}
+	return true
+}
+
 func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -43,19 +52,18 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		return
 	}
 
-	originalURL := string(body)
+	originalURL := strings.TrimSpace(string(body))
 	shortURL := shortenurl.Shortener(originalURL)
 
 	err = storage.AddURL(shortURL, originalURL)
-	log.Println("addURL err is", err)
 	if err != nil {
-		http.Error(w, "Invalid URL", http.StatusInternalServerError)
+		http.Error(w, "Failed to add URL", http.StatusInternalServerError) // Обработка ошибки добавления URL
 		return
 	}
 
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusCreated) // Возвращаем корректный статус для успешного добавления
 	w.Write([]byte(response))
 }
 

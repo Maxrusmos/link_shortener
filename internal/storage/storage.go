@@ -71,8 +71,8 @@ func NewFileURLStorage(filePath string) URLStorage {
 
 func (s *FileURLStorage) AddURL(key string, url string) error {
 	log.Println("FileURLStorageADDURL")
-	// s.mutex.Lock()
-	// defer s.mutex.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	urlToWrite := filework.JSONURLs{
 		ShortURL:  key,
 		OriginURL: url,
