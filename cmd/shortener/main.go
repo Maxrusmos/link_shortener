@@ -51,10 +51,11 @@ func main() {
 		}
 		defer db.Close()
 		storageURL = storage.NewDatabaseURLStorage(db)
-		err = dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
+		err = dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS shortened_urls  (
 			id SERIAL PRIMARY KEY,
-			shortURL TEXT UNIQUE,
-			originalURL TEXT
+			short_url VARCHAR(50) NOT NULL,
+			original_url TEXT NOT NULL,
+			UNIQUE (original_url)
 		  )`)
 		if err != nil {
 			fmt.Println(err)

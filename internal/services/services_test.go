@@ -12,7 +12,6 @@ import (
 	"testing"
 )
 
-// MockURLStorage представляет mock для интерфейса storage.URLStorage.
 type MockURLStorage struct {
 	urls  map[string]string
 	mutex sync.Mutex
