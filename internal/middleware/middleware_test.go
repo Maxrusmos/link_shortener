@@ -35,20 +35,6 @@ func TestLoggingMiddleware(t *testing.T) {
 
 	body, _ := io.ReadAll(resp.Body)
 	assert.Equal(t, "Hello, World!", string(body))
-
-	// loggedFields := logger.With(
-	// 	zap.String("uri", req.URL.Path),
-	// 	zap.String("method", req.Method),
-	// 	zap.Int("status", resp.StatusCode),
-	// 	zap.Int64("size", resp.ContentLength),
-	// 	zap.Duration("elapsed", time.Since(time.Now())),
-	// )
-
-	// assert.Equal(t, "/test", loggedFields.Check(zap.String("1", "uri")))
-	// assert.Equal(t, "GET", loggedFields.Check(zap.String("method")))
-	// assert.Equal(t, http.StatusOK, loggedFields.Check(zap.Int("status")))
-	// assert.Equal(t, int64(len("Hello, World!")), loggedFields.Check(zap.Int64("size")))
-	// assert.True(t, loggedFields.Check(zap.Duration("elapsed")).Duration > 0)
 }
 
 func TestCompressionMiddleware(t *testing.T) {

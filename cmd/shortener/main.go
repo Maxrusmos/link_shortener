@@ -30,7 +30,6 @@ func main() {
 	flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "Base address for shortened URL")
 	flag.StringVar(&conf.FileStore, "f", "", "File storage")
 	flag.StringVar(&conf.DBConnect, "d", "", "db Connection String")
-	// user=postgres password=490Sutud dbname=link-shortener sslmode=disable
 	flag.Parse()
 
 	var storageURL storage.URLStorage
@@ -86,7 +85,6 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
-
 	logger.Info("server started")
 	if err := server.ListenAndServe(); err != nil {
 		logger.Error("server stopped", zap.Error(err))

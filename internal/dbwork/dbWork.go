@@ -19,9 +19,6 @@ func Connect(connectionString string) (*sql.DB, error) {
 	log.Println("Connected to database")
 	return db, nil
 }
-
-// user=postgres password=490Sutud dbname=link-shortener sslmode=disable
-
 func CreateTables(db *sql.DB, createTableQuery string) error {
 	_, err := db.Exec(createTableQuery)
 	if err != nil {
