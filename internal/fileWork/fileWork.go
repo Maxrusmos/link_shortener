@@ -37,23 +37,19 @@ func FindOriginURL(filename string, shortURL string) (string, error) {
 		return "", err
 	}
 	defer file.Close()
-
 	scanner := bufio.NewScanner(file)
+	var data JSONURLs
 	for scanner.Scan() {
-		var data JSONURLs
-		line := scanner.Text()                     // Читаем строку файла
-		err := json.Unmarshal([]byte(line), &data) // Разбираем JSON из строки
+		err := json.Unmarshal(scanner.Bytes(), &data)
 		if err != nil {
 			return "", err
 		}
-		if data.ShortURL == shortURL {
-			return data.OriginURL, nil
+		if err != nil {
+			return "", err
 		}
 	}
-
 	if err := scanner.Err(); err != nil {
 		return "", err
 	}
-
-	return "", err
+	return data.OriginURL, nil
 }
