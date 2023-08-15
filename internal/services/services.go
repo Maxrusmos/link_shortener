@@ -45,6 +45,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 
 	originalURL := strings.TrimSpace(string(body))
 	shortURL := shortenurl.Shortener(originalURL)
+	// fmt.Println(url.Parse(shortURL))
 
 	err = storage.AddURL(shortURL, originalURL)
 	if err != nil {

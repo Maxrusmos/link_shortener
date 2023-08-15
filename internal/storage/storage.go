@@ -77,12 +77,12 @@ func NewFileURLStorage(filePath string) URLStorage {
 
 func (s *FileURLStorage) AddURL(key string, url string) error {
 	var result strings.Builder
-	for _, char := range url {
+	for _, char := range key {
 		if !unicode.IsControl(char) {
 			result.WriteRune(char)
 		}
 	}
-	url = result.String()
+	key = result.String()
 	log.Println("FileURLStorageADDURL")
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
