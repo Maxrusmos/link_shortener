@@ -35,10 +35,7 @@ func TestFileURLStorage(t *testing.T) {
 
 func testStorage(t *testing.T, storage URLStorage) {
 	// Тест AddURL
-	err := storage.AddURL("abc123", "http://example.com")
-	if err != nil {
-		t.Errorf("AddURL returned an error: %v", err)
-	}
+	storage.AddURL("abc123", "http://example.com")
 
 	// Тест GetURL
 	url, err := storage.GetURL("abc123")
