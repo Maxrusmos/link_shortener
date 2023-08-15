@@ -85,7 +85,6 @@ var conf = config.GetConfig()
 func (s *FileURLStorage) AddURL(key string, url string) {
 	log.Println("FileURLStorageADDURL")
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	dataToWrite := JSONURLs{
 		ShortURL:  key,
 		OriginURL: url,
@@ -100,6 +99,7 @@ func (s *FileURLStorage) AddURL(key string, url string) {
 		fmt.Println(err)
 	}
 	_, err = file.WriteString(string(data) + "\n")
+	defer s.mutex.Unlock()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -110,9 +110,6 @@ func (s *FileURLStorage) AddURLSH(url string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
 	log.Println("FileURLStorageADDURL")
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	defer s.mutex.Unlock()
 	dataToWrite := JSONURLs{
 		ShortURL:  shortURL,
 		OriginURL: url,
@@ -130,6 +127,7 @@ func (s *FileURLStorage) AddURLSH(url string) (string, error) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer s.mutex.Unlock()
 
 	if err != nil {
 		log.Println("err is", err)
@@ -141,7 +139,6 @@ func (s *FileURLStorage) AddURLSH(url string) (string, error) {
 
 func (s *FileURLStorage) GetURL(key string) (string, error) {
 	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	file, err := os.OpenFile(conf.FileStore, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return "", err
@@ -162,6 +159,7 @@ func (s *FileURLStorage) GetURL(key string) (string, error) {
 			return data.OriginURL, nil
 		}
 	}
+	defer s.mutex.Unlock()
 
 	if err := scanner.Err(); err != nil {
 		return "", err

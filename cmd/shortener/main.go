@@ -75,6 +75,9 @@ func main() {
 	r.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
 		services.ShortenHandler(w, r, storageURL, conf.BaseURL)
 	})
+	r.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {
+		services.HandleBatchShorten(w, r, storageURL, conf.BaseURL)
+	})
 
 	server := &http.Server{
 		Addr:         conf.Address,
