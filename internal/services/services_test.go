@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"errors"
+	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/shortenurl"
 	"net/http"
 	"net/http/httptest"
@@ -70,10 +71,17 @@ func TestHandleGetRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	originURL, err := filework.FindOriginURL(conf.FileStore, "a9b9f043")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		HandleGetRequest(w, r, mockStorage)
 	})
+
+	rr.Header().Set("Location", originURL)
 
 	handler.ServeHTTP(rr, req)
 
@@ -103,6 +111,16 @@ func TestHandlePostRequest(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		HandlePostRequest(w, r, mockStorage, "http://localhost:8080")
 	})
+
+	dataToWrite := filework.JSONURLs{
+		ShortURL:  "a9b9f043",
+		OriginURL: "http://example.com",
+	}
+
+	err = filework.WriteURLsToFile(conf.FileStore, dataToWrite)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
 
 	handler.ServeHTTP(rr, req)
 
