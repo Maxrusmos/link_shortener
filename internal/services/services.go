@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -34,10 +35,21 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 
 func isValidURL(u string) bool {
 	parsedURL, err := url.Parse(u)
+	fmt.Println("parse", parsedURL)
 	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
 		return false
 	}
 	return true
+}
+
+func RemoveControlCharacters(input string) string {
+	// Создаем регулярное выражение для поиска управляющих символов
+	controlCharRegex := regexp.MustCompile(`[[:cntrl:]]`)
+
+	// Заменяем управляющие символы на пустую строку
+	cleanedString := controlCharRegex.ReplaceAllString(input, "")
+
+	return cleanedString
 }
 
 func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string) {
@@ -52,7 +64,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		return
 	}
 
-	originalURL := strings.TrimSpace(string(body))
+	originalURL := RemoveControlCharacters(strings.TrimSpace(string(body)))
 	if !isValidURL(originalURL) {
 		http.Error(w, "Invalid URL hhhhhhhhhhhhhhhhhhhhhhhhhhhhh", http.StatusBadRequest)
 		return
@@ -112,6 +124,7 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 	}
 
 	response := ShortURL{Result: baseURL + "/" + shortURL}
+	log.Println("ЬГВлитыповмолымв")
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
