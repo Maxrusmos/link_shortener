@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	config "link_shortener/internal/configs"
+	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
 	"log"
 	"net/http"
@@ -12,16 +13,6 @@ import (
 )
 
 var conf = config.GetConfig()
-
-func HasControlCharacters(s string) bool {
-	for _, char := range s {
-		if char < 32 || char == 127 {
-			fmt.Printf("Control character found: %c (ASCII %d)\n", char, char)
-			return true
-		}
-	}
-	return false
-}
 
 func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
@@ -53,13 +44,10 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	}
 
 	originalURL := strings.TrimSpace(string(body))
-	var shortURL string
+	shortURL := shortenurl.Shortener(originalURL)
 
-	shortURL, err = storage.AddURLSH(originalURL)
-
-	log.Println(HasControlCharacters(originalURL))
+	err = storage.AddURL(shortURL, originalURL)
 	if err != nil {
-		log.Println(HasControlCharacters(originalURL))
 		http.Error(w, "Failed to add URL ghgsdghsghdhsdhshdgh", http.StatusInternalServerError) // Обработка ошибки добавления URL
 		return
 	}
