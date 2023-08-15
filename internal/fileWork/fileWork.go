@@ -24,7 +24,7 @@ func WriteURLsToFile(filename string, dataToWrite JSONURLs) error {
 	}
 
 	defer file.Close()
-	_, err = file.WriteString(string(data))
+	_, err = file.WriteString(string(data) + "\n")
 	if err != nil {
 		return err
 	}
