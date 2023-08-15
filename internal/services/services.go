@@ -53,6 +53,10 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	}
 
 	originalURL := strings.TrimSpace(string(body))
+	if !isValidURL(originalURL) {
+		http.Error(w, "Invalid URL hhhhhhhhhhhhhhhhhhhhhhhhhhhhh", http.StatusBadRequest)
+		return
+	}
 	// shortURL := shortenurl.Shortener(originalURL)
 	var shortURL string
 
