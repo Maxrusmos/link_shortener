@@ -1,8 +1,11 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	config "link_shortener/internal/configs"
+	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/storage"
 	"net/http"
 	"strings"
@@ -29,13 +32,55 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 
 	originalURL := string(body)
 	shortURL, err := storage.AddURLSH(originalURL)
+	fmt.Println(originalURL)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
+	conf := config.GetConfig()
+	urlToWrite := filework.JSONURLs{
+		ShortURL:  shortURL,
+		OriginURL: originalURL,
+	}
+	filework.WriteURLsToFile(conf.FileStore, urlToWrite)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
+}
+
+type URL struct {
+	URL string `json:"url"`
+}
+
+type ShortURL struct {
+	Result string `json:"result"`
+}
+
+func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var url URL
+	err := json.NewDecoder(r.Body).Decode(&url)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	shortURL, err := storage.AddURLSH(url.URL)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	response := ShortURL{Result: baseURL + "/" + shortURL}
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(jsonResponse)
 }

@@ -93,6 +93,33 @@ func TestHandlePostRequest(t *testing.T) {
 	}
 }
 
+func TestShortenHandler(t *testing.T) {
+
+	// Create a test request with a JSON body
+	requestBody := []byte(`{"url": "http://example.com"}`)
+	req, err := http.NewRequest("POST", "/api/shorten", bytes.NewBuffer(requestBody))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a test response recorder
+	rr := httptest.NewRecorder()
+
+	// Call the ShortenHandler function with the mock storage and test request/response
+	services.ShortenHandler(rr, req, URLMap, "http://example.com")
+
+	// Check the response status code
+	if status := rr.Code; status != http.StatusCreated {
+		t.Errorf("handler returned wrong status code: got %v want %v", status, http.StatusCreated)
+	}
+
+	// Check the response body
+	expectedResponse := `{"result":"http://example.com/a9b9f043"}`
+	if rr.Body.String() != expectedResponse {
+		t.Errorf("handler returned unexpected body: got %v want %v", rr.Body.String(), expectedResponse)
+	}
+}
+
 func TestShortener(t *testing.T) {
 	shortURL := shortenurl.Shortener("http://example.com")
 
