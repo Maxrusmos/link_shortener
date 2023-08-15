@@ -34,6 +34,7 @@ func NewMapURLStorage() URLStorage {
 }
 
 func (s *MapURLStorage) AddURL(key string, url string) error {
+	log.Println("MapURLStorageADDURL")
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	if _, found := s.urls[key]; found {
@@ -69,8 +70,9 @@ func NewFileURLStorage(filePath string) URLStorage {
 }
 
 func (s *FileURLStorage) AddURL(key string, url string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	log.Println("FileURLStorageADDURL")
+	// s.mutex.Lock()
+	// defer s.mutex.Unlock()
 	urlToWrite := filework.JSONURLs{
 		ShortURL:  key,
 		OriginURL: url,
