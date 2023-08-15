@@ -51,6 +51,10 @@ func (m *MockURLStorage) GetURL(key string) (string, error) {
 	return url, nil
 }
 
+func (m *MockURLStorage) GetOriginalURL(key string) (string, bool) {
+	return key, false
+}
+
 func (m *MockURLStorage) Ping() error {
 	if m.err != nil {
 		return m.err
