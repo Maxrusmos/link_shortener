@@ -8,6 +8,7 @@ import (
 	"link_shortener/internal/middleware"
 	"link_shortener/internal/services"
 	"link_shortener/internal/storage"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -36,11 +37,14 @@ func main() {
 
 	if os.Getenv("DATABASE_DSN") == "" && conf.DBConnect == "" {
 		if conf.FileStore != "" {
+			log.Println("filework")
 			storageURL = storage.NewFileURLStorage(conf.FileStore)
 		} else {
+			log.Println("Memorywork")
 			storageURL = storage.NewMapURLStorage()
 		}
 	} else {
+		log.Println("dbWork")
 		db, err := dbwork.Connect(conf.DBConnect)
 		if err != nil {
 			fmt.Println(err)
