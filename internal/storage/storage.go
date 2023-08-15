@@ -2,15 +2,15 @@ package storage
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"link_shortener/internal/dbwork"
 	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/shortenurl"
 	"log"
-	"strings"
+	"os"
 	"sync"
-	"unicode"
 )
 
 type URLStorage interface {
@@ -76,23 +76,28 @@ func NewFileURLStorage(filePath string) URLStorage {
 }
 
 func (s *FileURLStorage) AddURL(key string, url string) error {
-	var result strings.Builder
-	for _, char := range key {
-		if !unicode.IsControl(char) {
-			result.WriteRune(char)
-		}
-	}
-	key = result.String()
 	log.Println("FileURLStorageADDURL")
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	urlToWrite := filework.JSONURLs{
+	dataToWrite := filework.JSONURLs{
 		ShortURL:  key,
 		OriginURL: url,
 	}
-	err := filework.WriteURLsToFile(s.filePath, urlToWrite)
+	err := filework.WriteURLsToFile(s.filePath, dataToWrite)
+	data, err := json.Marshal(dataToWrite)
 	if err != nil {
-		log.Println("err is", err)
+		return err
+	}
+
+	file, err := os.OpenFile(s.filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+	_, err = file.WriteString(string(data) + "\n")
+	if err != nil {
 		return err
 	}
 
