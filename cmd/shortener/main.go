@@ -9,6 +9,7 @@ import (
 	"link_shortener/internal/services"
 	"link_shortener/internal/storage"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -26,14 +27,14 @@ func main() {
 	r := chi.NewRouter()
 	flag.StringVar(&conf.Address, "a", "localhost:8080", "HTTP server address")
 	flag.StringVar(&conf.BaseURL, "b", "http://localhost:8080", "Base address for shortened URL")
-	flag.StringVar(&conf.FileStore, "f", "short-url-db.json", "File storage")
+	flag.StringVar(&conf.FileStore, "f", "", "File storage")
 	flag.StringVar(&conf.DBConnect, "d", "", "db Connection String")
 	// user=postgres password=490Sutud dbname=link-shortener sslmode=disable
 	flag.Parse()
 
 	var storageURL storage.URLStorage
 
-	if conf.DBConnect == "" {
+	if os.Getenv("DATABASE_DSN") == "" && conf.DBConnect == "" {
 		if conf.FileStore != "" {
 			storageURL = storage.NewFileURLStorage(conf.FileStore)
 		} else {
@@ -57,6 +58,31 @@ func main() {
 			return
 		}
 	}
+
+	// if conf.DBConnect == "" {
+	// 	if conf.FileStore != "" {
+	// 		storageURL = storage.NewFileURLStorage(conf.FileStore)
+	// 	} else {
+	// 		storageURL = storage.NewMapURLStorage()
+	// 	}
+	// } else {
+	// 	db, err := dbwork.Connect(conf.DBConnect)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 		return
+	// 	}
+	// 	defer db.Close()
+	// 	storageURL = storage.NewDatabaseURLStorage(db)
+	// 	err = dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
+	// 		id SERIAL PRIMARY KEY,
+	// 		shortURL TEXT UNIQUE,
+	// 		originalURL TEXT
+	// 	  )`)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 		return
+	// 	}
+	// }
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, storageURL)
