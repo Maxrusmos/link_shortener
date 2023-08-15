@@ -16,15 +16,16 @@ var conf = config.GetConfig()
 
 func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
-	var originalURL string
-	var err error
 
-	originalURL, err = storage.GetURL(id)
-	log.Println("originalURL is", originalURL)
+	originalURL, err := storage.GetURL(id)
 	if err != nil {
-		http.Error(w, "Invalid URL", http.StatusBadRequest)
-		return
+		fmt.Println(err)
 	}
+	log.Println("originalURL is", originalURL)
+	// if err != nil {
+	// 	http.Error(w, "Invalid URL", http.StatusBadRequest)
+	// 	return
+	// }
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Location", originalURL)

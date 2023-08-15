@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"link_shortener/internal/dbwork"
-	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/shortenurl"
 	"log"
 	"os"
@@ -75,11 +74,16 @@ func NewFileURLStorage(filePath string) URLStorage {
 	}
 }
 
+type JSONURLs struct {
+	ShortURL  string `json:"shortURL"`
+	OriginURL string `json:"originURL"`
+}
+
 func (s *FileURLStorage) AddURL(key string, url string) {
 	log.Println("FileURLStorageADDURL")
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	dataToWrite := filework.JSONURLs{
+	dataToWrite := JSONURLs{
 		ShortURL:  key,
 		OriginURL: url,
 	}
@@ -105,23 +109,31 @@ func (s *FileURLStorage) AddURLSH(url string) (string, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	urlToWrite := filework.JSONURLs{
+	defer s.mutex.Unlock()
+	dataToWrite := JSONURLs{
 		ShortURL:  shortURL,
 		OriginURL: url,
 	}
+	data, err := json.Marshal(dataToWrite)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	err := filework.WriteURLsToFile(s.filePath, urlToWrite)
+	file, err := os.OpenFile(s.filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = file.WriteString(string(data) + "\n")
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	if err != nil {
 		log.Println("err is", err)
 		return "", err
 	}
 
 	return shortURL, nil
-}
-
-type JSONURLs struct {
-	ShortURL  string `json:"shortURL"`
-	OriginURL string `json:"originURL"`
 }
 
 func (s *FileURLStorage) GetURL(key string) (string, error) {
@@ -142,6 +154,8 @@ func (s *FileURLStorage) GetURL(key string) (string, error) {
 			return "", err
 		}
 		if data.ShortURL == key {
+			log.Println("originalURL SHORT", data.ShortURL)
+			log.Println("originalURL LONG", data.OriginURL)
 			return data.OriginURL, nil
 		}
 	}
