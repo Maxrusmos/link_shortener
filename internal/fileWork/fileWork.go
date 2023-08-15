@@ -3,7 +3,6 @@ package filework
 import (
 	"bufio"
 	"encoding/json"
-	"log"
 	"os"
 )
 
@@ -15,7 +14,6 @@ type JSONURLs struct {
 func WriteURLsToFile(filename string, dataToWrite JSONURLs) error {
 	data, err := json.Marshal(dataToWrite)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -36,24 +34,26 @@ func WriteURLsToFile(filename string, dataToWrite JSONURLs) error {
 func FindOriginURL(filename string, shortURL string) (string, error) {
 	file, err := os.OpenFile(filename, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
-		log.Println(err)
 		return "", err
 	}
 	defer file.Close()
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		var data JSONURLs
-		err := json.Unmarshal(scanner.Bytes(), &data)
+		line := scanner.Text()                     // Читаем строку файла
+		err := json.Unmarshal([]byte(line), &data) // Разбираем JSON из строки
 		if err != nil {
 			return "", err
 		}
 		if data.ShortURL == shortURL {
-			log.Println(data.OriginURL)
 			return data.OriginURL, nil
 		}
 	}
+
 	if err := scanner.Err(); err != nil {
 		return "", err
 	}
+
 	return "", err
 }
