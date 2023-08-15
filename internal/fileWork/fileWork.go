@@ -48,6 +48,7 @@ func FindOriginURL(filename string, shortURL string) (string, error) {
 			return "", err
 		}
 		if data.ShortURL == shortURL {
+			log.Println(data.OriginURL)
 			return data.OriginURL, nil
 		}
 	}

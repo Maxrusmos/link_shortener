@@ -7,6 +7,7 @@ import (
 	"link_shortener/internal/dbwork"
 	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/shortenurl"
+	"log"
 	"sync"
 )
 
@@ -76,6 +77,7 @@ func (s *FileURLStorage) AddURL(key string, url string) error {
 	}
 	err := filework.WriteURLsToFile(s.filePath, urlToWrite)
 	if err != nil {
+		log.Println("err is", err)
 		return err
 	}
 
