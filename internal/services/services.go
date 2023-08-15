@@ -32,6 +32,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 
 	originalURL := string(body)
 	shortURL, err := storage.AddURLSH(originalURL)
+	fmt.Println(originalURL)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
