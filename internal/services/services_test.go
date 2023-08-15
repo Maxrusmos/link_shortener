@@ -123,7 +123,7 @@ func TestHandlePostRequest(t *testing.T) {
 		urls: make(map[string]string),
 	}
 
-	reqBody := []byte(`"http://example.com"`)
+	reqBody := []byte("http://example.com")
 
 	req, err := http.NewRequest("POST", "/", bytes.NewReader(reqBody))
 	if err != nil {
