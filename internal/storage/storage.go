@@ -18,6 +18,7 @@ type URLStorage interface {
 	AddURL(key string, url string)
 	GetURL(key string) (string, error)
 	AddURLSH(url string) (string, error)
+	GetOriginalURL(key string) (string, bool)
 	Ping() error
 }
 
@@ -30,6 +31,10 @@ func NewMapURLStorage() URLStorage {
 	return &MapURLStorage{
 		urls: make(map[string]string),
 	}
+}
+
+func (s *MapURLStorage) GetOriginalURL(key string) (string, bool) {
+	return key, false
 }
 
 func (s *MapURLStorage) AddURL(key string, url string) {
@@ -73,6 +78,10 @@ func NewFileURLStorage(filePath string) URLStorage {
 	return &FileURLStorage{
 		filePath: filePath,
 	}
+}
+
+func (s *FileURLStorage) GetOriginalURL(key string) (string, bool) {
+	return key, false
 }
 
 type JSONURLs struct {
@@ -181,6 +190,19 @@ func NewDatabaseURLStorage(db *sql.DB) URLStorage {
 	return &DatabaseURLStorage{
 		db: db,
 	}
+}
+
+func (s *DatabaseURLStorage) GetOriginalURL(key string) (string, bool) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	originalURL, err := dbwork.GetOriginalURL(s.db, key)
+	if err == sql.ErrNoRows {
+		return "такой записи не существует", false
+	}
+	if originalURL != "" {
+		return originalURL, true
+	}
+	return originalURL, false
 }
 
 func (s *DatabaseURLStorage) AddURL(key string, url string) {

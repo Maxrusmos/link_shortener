@@ -37,8 +37,20 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	}
 	originalURL := strings.TrimSpace(string(body))
 	shortURL := shortenurl.Shortener(originalURL)
+
+	fmt.Println("shortURL", shortURL)
+	existingURL, found := storage.GetOriginalURL(shortURL)
+	fmt.Println(existingURL)
+	if found {
+		response := fmt.Sprintf("%s/%s", baseURL, shortURL)
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusConflict)
+		w.Write([]byte(response))
+		return
+	} else {
+		storage.AddURL(shortURL, originalURL)
+	}
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
-	storage.AddURL(shortURL, originalURL)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
@@ -81,6 +93,21 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		return
 	}
 
+	existingURL, found := storage.GetOriginalURL(shortenurl.Shortener(url.URL))
+	fmt.Println(existingURL)
+	if found {
+		// response := fmt.Sprintf("%s/%s", baseURL, shortenurl.Shortener(url.URL))
+		response := ShortURL{Result: baseURL + "/" + shortenurl.Shortener(url.URL)}
+		jsonResponse, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, "Failed to marshal JSON response", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusConflict)
+		w.Write([]byte(jsonResponse))
+		return
+	}
 	shortURL, err := storage.AddURLSH(url.URL)
 	if err != nil {
 		http.Error(w, "Failed to add URL", http.StatusInternalServerError)
