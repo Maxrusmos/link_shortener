@@ -16,7 +16,6 @@ func Connect(connectionString string) (*sql.DB, error) {
 	if err := db.Ping(); err != nil {
 		return nil, err
 	}
-	// defer db.Close()
 	log.Println("Connected to database")
 	return db, nil
 }

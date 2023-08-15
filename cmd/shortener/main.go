@@ -1,18 +1,15 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
 	"fmt"
 	config "link_shortener/internal/configs"
 	"link_shortener/internal/dbwork"
-	"link_shortener/internal/flagpkg"
-	"link_shortener/internal/storage"
-	"time"
-
 	"link_shortener/internal/middleware"
 	"link_shortener/internal/services"
+	"link_shortener/internal/storage"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
@@ -34,40 +31,44 @@ func main() {
 	// user=postgres password=490Sutud dbname=link-shortener sslmode=disable
 	flag.Parse()
 
-	storage := storage.NewMapURLStorage()
-	flag := flagpkg.GetSharedFlag()
-	var db *sql.DB
+	var storageURL storage.URLStorage
+
 	if conf.DBConnect == "" {
 		if conf.FileStore != "" {
-			flag.SetValue("f")
+			storageURL = storage.NewFileURLStorage(conf.FileStore)
 		} else {
-			flag.SetValue("noF")
+			storageURL = storage.NewMapURLStorage()
 		}
 	} else {
-		flag.SetValue("d")
-		db, err = dbwork.Connect(conf.DBConnect)
-		dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
+		db, err := dbwork.Connect(conf.DBConnect)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer db.Close()
+		storageURL = storage.NewDatabaseURLStorage(db)
+		err = dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
 			id SERIAL PRIMARY KEY,
 			shortURL TEXT UNIQUE,
 			originalURL TEXT
 		  )`)
 		if err != nil {
-			fmt.Println("err")
+			fmt.Println(err)
+			return
 		}
 	}
-	fmt.Println(flag.GetValue())
 
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
-		services.HandleGetRequest(w, r, storage)
+		services.HandleGetRequest(w, r, storageURL)
 	})
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		services.Ping(db)
+		services.Ping(storageURL)
 	})
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		services.HandlePostRequest(w, r, storage, conf.BaseURL)
+		services.HandlePostRequest(w, r, storageURL, conf.BaseURL)
 	})
 	r.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
-		services.ShortenHandler(w, r, storage, conf.BaseURL)
+		services.ShortenHandler(w, r, storageURL, conf.BaseURL)
 	})
 
 	server := &http.Server{
