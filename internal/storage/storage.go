@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bufio"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -83,18 +84,12 @@ func (s *FileURLStorage) AddURL(key string, url string) error {
 		ShortURL:  key,
 		OriginURL: url,
 	}
-	err := filework.WriteURLsToFile(s.filePath, dataToWrite)
 	data, err := json.Marshal(dataToWrite)
 	if err != nil {
 		return err
 	}
 
 	file, err := os.OpenFile(s.filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-
-	if err != nil {
-		return err
-	}
-
 	defer file.Close()
 	_, err = file.WriteString(string(data) + "\n")
 	if err != nil {
@@ -124,15 +119,38 @@ func (s *FileURLStorage) AddURLSH(url string) (string, error) {
 	return shortURL, nil
 }
 
+type JSONURLs struct {
+	ShortURL  string `json:"shortURL"`
+	OriginURL string `json:"originURL"`
+}
+
 func (s *FileURLStorage) GetURL(key string) (string, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	originURL, err := filework.FindOriginURL(s.filePath, key)
+	file, err := os.OpenFile(s.filePath, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return "", err
 	}
+	defer file.Close()
 
-	return originURL, nil
+	scanner := bufio.NewScanner(file)
+	var data JSONURLs
+	for scanner.Scan() {
+		line := scanner.Text()
+		err := json.Unmarshal([]byte(line), &data)
+		if err != nil {
+			return "", err
+		}
+		if data.ShortURL == key {
+			return data.OriginURL, nil
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+
+	return data.OriginURL, nil
 }
 
 func (s *FileURLStorage) Ping() error {

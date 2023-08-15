@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	config "link_shortener/internal/configs"
-	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
 	"log"
@@ -21,7 +20,6 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	var err error
 
 	originalURL, err = storage.GetURL(id)
-	originalURL, err = filework.FindOriginURL(conf.FileStore, id)
 	log.Println("originalURL is", originalURL)
 	if err != nil {
 		http.Error(w, "Invalid URL", http.StatusBadRequest)
