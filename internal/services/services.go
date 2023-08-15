@@ -48,13 +48,13 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 
 	err = storage.AddURL(shortURL, originalURL)
 	if err != nil {
-		http.Error(w, "Failed to add URL ghgsdghsghdhsdhshdgh", http.StatusInternalServerError) // Обработка ошибки добавления URL
+		http.Error(w, "Failed to add URL ghgsdghsghdhsdhshdgh", http.StatusInternalServerError)
 		return
 	}
 
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusCreated) // Возвращаем корректный статус для успешного добавления
+	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(response))
 }
 
