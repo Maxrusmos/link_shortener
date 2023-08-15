@@ -43,7 +43,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		return
 	}
 
-	originalURL := strings.ReplaceAll(string(body), "\"", "")
+	originalURL := string(body)
 	shortURL := shortenurl.Shortener(originalURL)
 
 	err = storage.AddURL(shortURL, originalURL)
