@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"io"
 	config "link_shortener/internal/configs"
-	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
 	"log"
 	"net/http"
-	"net/url"
-	"regexp"
 	"strings"
 )
 
@@ -33,25 +30,6 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func isValidURL(u string) bool {
-	parsedURL, err := url.Parse(u)
-	fmt.Println("parse", parsedURL)
-	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
-		return false
-	}
-	return true
-}
-
-func RemoveControlCharacters(input string) string {
-	// Создаем регулярное выражение для поиска управляющих символов
-	controlCharRegex := regexp.MustCompile(`[[:cntrl:]]`)
-
-	// Заменяем управляющие символы на пустую строку
-	cleanedString := controlCharRegex.ReplaceAllString(input, "")
-
-	return cleanedString
-}
-
 func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -64,11 +42,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 		return
 	}
 
-	originalURL := RemoveControlCharacters(strings.TrimSpace(string(body)))
-	if !isValidURL(originalURL) {
-		http.Error(w, "Invalid URL hhhhhhhhhhhhhhhhhhhhhhhhhhhhh", http.StatusBadRequest)
-		return
-	}
+	originalURL := strings.TrimSpace(string(body))
 	// shortURL := shortenurl.Shortener(originalURL)
 	var shortURL string
 
@@ -109,25 +83,29 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		return
 	}
 
-	var url URL
-	err := json.NewDecoder(r.Body).Decode(&url)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 
-	shortURL := shortenurl.Shortener(url.URL)
-	err = storage.AddURL(shortURL, url.URL)
+	var url URL
+	err = json.Unmarshal(body, &url)
 	if err != nil {
-		http.Error(w, "Invalid URL", http.StatusBadRequest)
+		http.Error(w, "Invalid JSON data", http.StatusBadRequest)
+		return
+	}
+
+	shortURL, err := storage.AddURLSH(url.URL)
+	if err != nil {
+		http.Error(w, "Failed to add URL", http.StatusInternalServerError)
 		return
 	}
 
 	response := ShortURL{Result: baseURL + "/" + shortURL}
-	log.Println("ЬГВлитыповмолымв")
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to marshal JSON response", http.StatusInternalServerError)
 		return
 	}
 

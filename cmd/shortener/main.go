@@ -63,31 +63,6 @@ func main() {
 		}
 	}
 
-	// if conf.DBConnect == "" {
-	// 	if conf.FileStore != "" {
-	// 		storageURL = storage.NewFileURLStorage(conf.FileStore)
-	// 	} else {
-	// 		storageURL = storage.NewMapURLStorage()
-	// 	}
-	// } else {
-	// 	db, err := dbwork.Connect(conf.DBConnect)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		return
-	// 	}
-	// 	defer db.Close()
-	// 	storageURL = storage.NewDatabaseURLStorage(db)
-	// 	err = dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS urls (
-	// 		id SERIAL PRIMARY KEY,
-	// 		shortURL TEXT UNIQUE,
-	// 		originalURL TEXT
-	// 	  )`)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		return
-	// 	}
-	// }
-
 	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleGetRequest(w, r, storageURL)
 	})
