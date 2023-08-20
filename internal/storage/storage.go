@@ -1,8 +1,16 @@
 package storage
 
 import (
+	"bufio"
+	"database/sql"
+	"encoding/json"
 	"errors"
+	"fmt"
+	config "link_shortener/internal/configs"
+	"link_shortener/internal/dbwork"
 	"link_shortener/internal/shortenurl"
+	"log"
+	"os"
 	"sync"
 )
 
@@ -10,20 +18,36 @@ type URLStorage interface {
 	AddURL(key string, url string) error
 	GetURL(key string) (string, error)
 	AddURLSH(url string) (string, error)
+	GetOriginalURL(key string) (string, bool)
+	Ping() error
 }
 
-type mapURLStorage struct {
+type MapURLStorage struct {
 	urls  map[string]string
 	mutex sync.Mutex
 }
 
 func NewMapURLStorage() URLStorage {
-	return &mapURLStorage{
+	return &MapURLStorage{
 		urls: make(map[string]string),
 	}
 }
 
-func (s *mapURLStorage) AddURLSH(url string) (string, error) {
+func (s *MapURLStorage) GetOriginalURL(key string) (string, bool) {
+	return key, false
+}
+
+func (s *MapURLStorage) AddURL(key string, url string) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	if _, found := s.urls[key]; found {
+		fmt.Println("key already exists")
+	}
+	s.urls[key] = url
+	return nil
+}
+
+func (s *MapURLStorage) AddURLSH(url string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -31,17 +55,7 @@ func (s *mapURLStorage) AddURLSH(url string) (string, error) {
 	return shortURL, nil
 }
 
-func (s *mapURLStorage) AddURL(key string, url string) error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	if _, found := s.urls[key]; found {
-		return errors.New("key already exists")
-	}
-	s.urls[key] = url
-	return nil
-}
-
-func (s *mapURLStorage) GetURL(key string) (string, error) {
+func (s *MapURLStorage) GetURL(key string) (string, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	url, found := s.urls[key]
@@ -49,4 +63,184 @@ func (s *mapURLStorage) GetURL(key string) (string, error) {
 		return "", errors.New("key not found")
 	}
 	return url, nil
+}
+
+func (s *MapURLStorage) Ping() error {
+	return errors.New("Ping is not supported for MapURLStorage")
+}
+
+type FileURLStorage struct {
+	filePath string
+	mutex    sync.Mutex
+}
+
+func NewFileURLStorage(filePath string) URLStorage {
+	return &FileURLStorage{
+		filePath: filePath,
+	}
+}
+
+func (s *FileURLStorage) GetOriginalURL(key string) (string, bool) {
+	return key, false
+}
+
+type JSONURLs struct {
+	ShortURL  string `json:"shortURL"`
+	OriginURL string `json:"originURL"`
+}
+
+var conf = config.GetConfig()
+
+func (s *FileURLStorage) AddURL(key string, url string) error {
+	log.Println(s.filePath, key, url)
+	s.mutex.Lock()
+	dataToWrite := JSONURLs{
+		ShortURL:  key,
+		OriginURL: url,
+	}
+	data, err := json.Marshal(dataToWrite)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(conf.FileStore, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return err
+	}
+	_, err = file.WriteString(string(data) + "\n")
+	defer s.mutex.Unlock()
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	return nil
+}
+
+func (s *FileURLStorage) AddURLSH(url string) (string, error) {
+	shortURL := shortenurl.Shortener(url)
+	log.Println("FileURLStorageADDURL")
+	s.mutex.Lock()
+	dataToWrite := JSONURLs{
+		ShortURL:  shortURL,
+		OriginURL: url,
+	}
+	data, err := json.Marshal(dataToWrite)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	file, err := os.OpenFile(conf.FileStore, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = file.WriteString(string(data) + "\n")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer s.mutex.Unlock()
+
+	if err != nil {
+		log.Println("err is", err)
+		return "", err
+	}
+
+	return shortURL, nil
+}
+
+func (s *FileURLStorage) GetURL(key string) (string, error) {
+	log.Println(s.filePath, key)
+	s.mutex.Lock()
+	file, err := os.OpenFile(conf.FileStore, os.O_RDONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var data JSONURLs
+	for scanner.Scan() {
+		line := scanner.Text()
+		err := json.Unmarshal([]byte(line), &data)
+		if err != nil {
+			return "", err
+		}
+		if data.ShortURL == key {
+			log.Println("originalURL SHORT", data.ShortURL)
+			log.Println("originalURL LONG", data.OriginURL)
+			return data.OriginURL, nil
+		}
+	}
+	defer s.mutex.Unlock()
+
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+
+	return data.OriginURL, nil
+}
+
+func (s *FileURLStorage) Ping() error {
+	return errors.New("Ping is not supported for FileURLStorage")
+}
+
+type DatabaseURLStorage struct {
+	db    *sql.DB
+	mutex sync.Mutex
+}
+
+func NewDatabaseURLStorage(db *sql.DB) URLStorage {
+	return &DatabaseURLStorage{
+		db: db,
+	}
+}
+
+func (s *DatabaseURLStorage) GetOriginalURL(key string) (string, bool) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	originalURL, err := dbwork.GetOriginalURL(s.db, key)
+	if err == sql.ErrNoRows {
+		return "такой записи не существует", false
+	}
+	if originalURL != "" {
+		return originalURL, true
+	}
+	return originalURL, false
+}
+
+func (s *DatabaseURLStorage) AddURL(key string, url string) error {
+	shortURL := shortenurl.Shortener(url)
+	err := dbwork.AddURL(s.db, shortURL, url)
+	if err != nil {
+		return err
+	}
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	return nil
+}
+
+func (s *DatabaseURLStorage) AddURLSH(url string) (string, error) {
+	shortURL := shortenurl.Shortener(url)
+	err := dbwork.AddURL(s.db, shortURL, url)
+	if err != nil {
+		return "", err
+	}
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	return shortURL, nil
+}
+
+func (s *DatabaseURLStorage) GetURL(key string) (string, error) {
+	originalURL, err := dbwork.GetOriginalURL(s.db, key)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	return originalURL, nil
+}
+
+func (s *DatabaseURLStorage) Ping() error {
+	if err := s.db.Ping(); err != nil {
+		return err
+	}
+	return nil
 }
