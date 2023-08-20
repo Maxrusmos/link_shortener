@@ -1,8 +1,6 @@
 package config
 
 import (
-	"link_shortener/internal/dbwork"
-	"link_shortener/internal/storage"
 	"os"
 )
 
@@ -19,31 +17,6 @@ type Config struct {
 
 func GetBaseURL(cfg Config) string {
 	return cfg.BaseURL
-}
-
-func GetStorageURL(conf Config) storage.URLStorage {
-	if conf.DBConnect == "" && conf.FileStore == "" && os.Getenv("FILE_STORAGE_PATH") == "" {
-		return storage.NewMapURLStorage()
-	}
-
-	if conf.FileStore != "" || os.Getenv("FILE_STORAGE_PATH") != "" {
-		return storage.NewFileURLStorage(conf.FileStore)
-	}
-
-	db, err := dbwork.Connect(conf.DBConnect)
-	if err != nil {
-		panic(err)
-	}
-	err = dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS shortened_urls  (
-        id SERIAL PRIMARY KEY,
-        short_url VARCHAR(50) NOT NULL,
-        original_url TEXT NOT NULL,
-        UNIQUE (original_url)
-      )`)
-	if err != nil {
-		panic(err)
-	}
-	return storage.NewDatabaseURLStorage(db)
 }
 
 func GetConfig() Config {

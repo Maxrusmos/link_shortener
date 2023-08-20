@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	config "link_shortener/internal/configs"
 	"link_shortener/internal/dbwork"
 	"link_shortener/internal/shortenurl"
 	"log"
@@ -88,6 +89,8 @@ type JSONURLs struct {
 	OriginURL string `json:"originURL"`
 }
 
+var conf = config.GetConfig()
+
 func (s *FileURLStorage) AddURL(key string, url string) error {
 	log.Println(s.filePath, key, url)
 	s.mutex.Lock()
@@ -100,7 +103,7 @@ func (s *FileURLStorage) AddURL(key string, url string) error {
 		return err
 	}
 
-	file, err := os.OpenFile("short-url-db.json", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	file, err := os.OpenFile(conf.FileStore, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		return err
 	}
@@ -126,7 +129,7 @@ func (s *FileURLStorage) AddURLSH(url string) (string, error) {
 		fmt.Println(err)
 	}
 
-	file, err := os.OpenFile("short-url-db.json", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	file, err := os.OpenFile(conf.FileStore, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -147,7 +150,7 @@ func (s *FileURLStorage) AddURLSH(url string) (string, error) {
 func (s *FileURLStorage) GetURL(key string) (string, error) {
 	log.Println(s.filePath, key)
 	s.mutex.Lock()
-	file, err := os.OpenFile("short-url-db.json", os.O_RDONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(conf.FileStore, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return "", err
 	}

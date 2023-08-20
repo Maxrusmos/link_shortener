@@ -22,7 +22,7 @@ func main() {
 	flag.StringVar(&conf.FileStore, "f", "", "File storage")
 	flag.StringVar(&conf.DBConnect, "d", "", "db Connection String")
 	flag.Parse()
-	storageURL := config.GetStorageURL(conf)
+	storageURL := startprep.GetStorageURL(conf)
 	startprep.RegisterRoutes(r, storageURL, conf.BaseURL, logger)
 	startprep.StartServer(conf.Address, r, logger)
 }

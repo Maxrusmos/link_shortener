@@ -1,10 +1,13 @@
 package startprep
 
 import (
+	config "link_shortener/internal/configs"
+	"link_shortener/internal/dbwork"
 	"link_shortener/internal/middleware"
 	"link_shortener/internal/services"
 	"link_shortener/internal/storage"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -41,4 +44,29 @@ func StartServer(address string, r chi.Router, logger *zap.Logger) {
 	if err := server.ListenAndServe(); err != nil {
 		logger.Error("server stopped", zap.Error(err))
 	}
+}
+
+func GetStorageURL(conf config.Config) storage.URLStorage {
+	if conf.DBConnect == "" && conf.FileStore == "" && os.Getenv("FILE_STORAGE_PATH") == "" {
+		return storage.NewMapURLStorage()
+	}
+
+	if conf.FileStore != "" || os.Getenv("FILE_STORAGE_PATH") != "" {
+		return storage.NewFileURLStorage(conf.FileStore)
+	}
+
+	db, err := dbwork.Connect(conf.DBConnect)
+	if err != nil {
+		panic(err)
+	}
+	err = dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS shortened_urls  (
+        id SERIAL PRIMARY KEY,
+        short_url VARCHAR(50) NOT NULL,
+        original_url TEXT NOT NULL,
+        UNIQUE (original_url)
+      )`)
+	if err != nil {
+		panic(err)
+	}
+	return storage.NewDatabaseURLStorage(db)
 }
