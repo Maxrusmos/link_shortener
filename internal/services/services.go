@@ -7,6 +7,7 @@ import (
 	config "link_shortener/internal/configs"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -18,11 +19,12 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 	id := strings.TrimPrefix(r.URL.Path, "/")
 	originalURL, err := storage.GetURL(id)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Location", originalURL)
+	log.Println(w.Header().Get("Location"))
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
