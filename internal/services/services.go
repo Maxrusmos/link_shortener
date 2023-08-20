@@ -9,6 +9,7 @@ import (
 	"link_shortener/internal/storage"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 var conf = config.GetConfig()
@@ -26,6 +27,7 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 }
 
 func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string) {
+	var mutex sync.Mutex
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -38,18 +40,20 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	originalURL := strings.TrimSpace(string(body))
 	shortURL := shortenurl.Shortener(originalURL)
 
-	fmt.Println("shortURL", shortURL)
-	existingURL, found := storage.GetOriginalURL(shortURL)
-	fmt.Println(existingURL)
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	_, found := storage.GetOriginalURL(shortURL)
 	if found {
 		response := fmt.Sprintf("%s/%s", baseURL, shortURL)
 		w.Header().Set("Content-Type", "text/plain")
 		w.WriteHeader(http.StatusConflict)
 		w.Write([]byte(response))
 		return
-	} else {
-		storage.AddURL(shortURL, originalURL)
 	}
+
+	storage.AddURL(shortURL, originalURL)
+
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
@@ -96,7 +100,6 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 	existingURL, found := storage.GetOriginalURL(shortenurl.Shortener(url.URL))
 	fmt.Println(existingURL)
 	if found {
-		// response := fmt.Sprintf("%s/%s", baseURL, shortenurl.Shortener(url.URL))
 		response := ShortURL{Result: baseURL + "/" + shortenurl.Shortener(url.URL)}
 		jsonResponse, err := json.Marshal(response)
 		if err != nil {

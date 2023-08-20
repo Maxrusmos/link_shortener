@@ -2,16 +2,8 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	config "link_shortener/internal/configs"
-	"link_shortener/internal/dbwork"
-	"link_shortener/internal/middleware"
-	"link_shortener/internal/services"
-	"link_shortener/internal/storage"
-	"log"
-	"net/http"
-	"os"
-	"time"
+	"link_shortener/internal/startprep"
 
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
@@ -23,7 +15,6 @@ func main() {
 		panic(err)
 	}
 	defer logger.Sync()
-
 	conf := config.GetConfig()
 	r := chi.NewRouter()
 	flag.StringVar(&conf.Address, "a", "localhost:8080", "HTTP server address")
@@ -31,63 +22,7 @@ func main() {
 	flag.StringVar(&conf.FileStore, "f", "", "File storage")
 	flag.StringVar(&conf.DBConnect, "d", "", "db Connection String")
 	flag.Parse()
-
-	var storageURL storage.URLStorage
-
-	if os.Getenv("DATABASE_DSN") == "" && conf.DBConnect == "" {
-		if conf.FileStore != "" || os.Getenv("FILE_STORAGE_PATH") != "" {
-			log.Println("filework")
-			storageURL = storage.NewFileURLStorage(conf.FileStore)
-		} else {
-			log.Println("Memorywork")
-			storageURL = storage.NewMapURLStorage()
-		}
-	} else {
-		log.Println("dbWork")
-		db, err := dbwork.Connect(conf.DBConnect)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		defer db.Close()
-		storageURL = storage.NewDatabaseURLStorage(db)
-		err = dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS shortened_urls  (
-			id SERIAL PRIMARY KEY,
-			short_url VARCHAR(50) NOT NULL,
-			original_url TEXT NOT NULL,
-			UNIQUE (original_url)
-		  )`)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-	}
-
-	r.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
-		services.HandleGetRequest(w, r, storageURL)
-	})
-	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		services.Ping(storageURL)
-	})
-	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
-		services.HandlePostRequest(w, r, storageURL, conf.BaseURL)
-	})
-	r.Post("/api/shorten", func(w http.ResponseWriter, r *http.Request) {
-		services.ShortenHandler(w, r, storageURL, conf.BaseURL)
-	})
-	r.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {
-		services.HandleBatchShorten(w, r, storageURL, conf.BaseURL)
-	})
-
-	server := &http.Server{
-		Addr:         conf.Address,
-		Handler:      middleware.CompressionMiddleware(middleware.LoggingMiddleware(logger, r)),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
-	}
-	logger.Info("server started")
-	if err := server.ListenAndServe(); err != nil {
-		logger.Error("server stopped", zap.Error(err))
-	}
+	storageURL := config.GetStorageURL(conf)
+	startprep.RegisterRoutes(r, storageURL, conf.BaseURL, logger)
+	startprep.StartServer(conf.Address, r, logger)
 }

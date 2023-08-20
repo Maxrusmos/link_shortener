@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	config "link_shortener/internal/configs"
 	"link_shortener/internal/dbwork"
 	"link_shortener/internal/shortenurl"
 	"log"
@@ -15,7 +14,7 @@ import (
 )
 
 type URLStorage interface {
-	AddURL(key string, url string)
+	AddURL(key string, url string) error
 	GetURL(key string) (string, error)
 	AddURLSH(url string) (string, error)
 	GetOriginalURL(key string) (string, bool)
@@ -37,14 +36,14 @@ func (s *MapURLStorage) GetOriginalURL(key string) (string, bool) {
 	return key, false
 }
 
-func (s *MapURLStorage) AddURL(key string, url string) {
-	log.Println("MapURLStorageADDURL")
+func (s *MapURLStorage) AddURL(key string, url string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	if _, found := s.urls[key]; found {
 		fmt.Println("key already exists")
 	}
 	s.urls[key] = url
+	return nil
 }
 
 func (s *MapURLStorage) AddURLSH(url string) (string, error) {
@@ -89,9 +88,9 @@ type JSONURLs struct {
 	OriginURL string `json:"originURL"`
 }
 
-var conf = config.GetConfig()
+// var conf = config.GetConfig()
 
-func (s *FileURLStorage) AddURL(key string, url string) {
+func (s *FileURLStorage) AddURL(key string, url string) error {
 	log.Println("FileURLStorageADDURL")
 	s.mutex.Lock()
 	dataToWrite := JSONURLs{
@@ -100,19 +99,20 @@ func (s *FileURLStorage) AddURL(key string, url string) {
 	}
 	data, err := json.Marshal(dataToWrite)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
-	file, err := os.OpenFile(conf.FileStore, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	file, err := os.OpenFile(s.filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	_, err = file.WriteString(string(data) + "\n")
 	defer s.mutex.Unlock()
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	defer file.Close()
+	return nil
 }
 
 func (s *FileURLStorage) AddURLSH(url string) (string, error) {
@@ -128,7 +128,7 @@ func (s *FileURLStorage) AddURLSH(url string) (string, error) {
 		fmt.Println(err)
 	}
 
-	file, err := os.OpenFile(conf.FileStore, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	file, err := os.OpenFile(s.filePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -148,7 +148,7 @@ func (s *FileURLStorage) AddURLSH(url string) (string, error) {
 
 func (s *FileURLStorage) GetURL(key string) (string, error) {
 	s.mutex.Lock()
-	file, err := os.OpenFile(conf.FileStore, os.O_RDONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(s.filePath, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return "", err
 	}
@@ -205,14 +205,15 @@ func (s *DatabaseURLStorage) GetOriginalURL(key string) (string, bool) {
 	return originalURL, false
 }
 
-func (s *DatabaseURLStorage) AddURL(key string, url string) {
+func (s *DatabaseURLStorage) AddURL(key string, url string) error {
 	shortURL := shortenurl.Shortener(url)
 	err := dbwork.AddURL(s.db, shortURL, url)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+	return nil
 }
 
 func (s *DatabaseURLStorage) AddURLSH(url string) (string, error) {

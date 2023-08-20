@@ -3,7 +3,6 @@ package services
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	filework "link_shortener/internal/fileWork"
 	"link_shortener/internal/shortenurl"
 	"net/http"
@@ -18,13 +17,14 @@ type MockURLStorage struct {
 	err   error
 }
 
-func (m *MockURLStorage) AddURL(key string, url string) {
+func (m *MockURLStorage) AddURL(key string, url string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if m.err != nil {
-		fmt.Println(m.err)
+		return m.err
 	}
 	m.urls[key] = url
+	return nil
 }
 
 func (m *MockURLStorage) AddURLSH(url string) (string, error) {
