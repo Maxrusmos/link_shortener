@@ -20,6 +20,7 @@ type URLStorage interface {
 	AddURLSH(url string) (string, error)
 	GetOriginalURL(key string) (string, bool)
 	Ping() error
+	GetAllURLs() ([]map[string]string, error)
 }
 
 type MapURLStorage struct {
@@ -63,6 +64,19 @@ func (s *MapURLStorage) GetURL(key string) (string, error) {
 		return "", errors.New("key not found")
 	}
 	return url, nil
+}
+
+func (s *MapURLStorage) GetAllURLs() ([]map[string]string, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	urls := make([]map[string]string, 0)
+	for shortURL, originalURL := range s.urls {
+		url := make(map[string]string)
+		url["short_url"] = shortURL
+		url["original_url"] = originalURL
+		urls = append(urls, url)
+	}
+	return urls, nil
 }
 
 func (s *MapURLStorage) Ping() error {
@@ -179,6 +193,13 @@ func (s *FileURLStorage) GetURL(key string) (string, error) {
 	return data.OriginURL, nil
 }
 
+func (s *FileURLStorage) GetAllURLs() ([]map[string]string, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	urls := make([]map[string]string, 0)
+	return urls, nil
+}
+
 func (s *FileURLStorage) Ping() error {
 	return errors.New("Ping is not supported for FileURLStorage")
 }
@@ -236,6 +257,13 @@ func (s *DatabaseURLStorage) GetURL(key string) (string, error) {
 		return "", err
 	}
 	return originalURL, nil
+}
+
+func (s *DatabaseURLStorage) GetAllURLs() ([]map[string]string, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	urls := make([]map[string]string, 0)
+	return urls, nil
 }
 
 func (s *DatabaseURLStorage) Ping() error {

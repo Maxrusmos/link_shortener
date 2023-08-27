@@ -1,6 +1,9 @@
 package services
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -183,28 +186,71 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 
 var users = make(map[string][]URL)
 
-func UserURLsHandler(w http.ResponseWriter, req *http.Request) {
-	cookie, err := cookieswork.GenerateCookie("user1")
-	http.SetCookie(w, cookie)
-	userID, err := cookieswork.GetUserIDFromCookie(req)
-	log.Println(userID)
+func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
+	Scookie, err := cookieswork.GenerateCookie("user")
+	http.SetCookie(w, Scookie)
+
+	// Получаем куку с уникальным идентификатором пользователя
+	cookie, err := r.Cookie("auth_cookie")
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	urls, exists := users[userID]
-	if !exists || len(urls) == 0 {
-		w.WriteHeader(http.StatusNoContent)
+	// Проверяем подлинность куки
+	parts := strings.Split(cookie.Value, "|")
+	if len(parts) != 2 {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	value, err := base64.StdEncoding.DecodeString(parts[0])
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	signature, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	expectedSignature := hmac.New(sha256.New, []byte("secret_key"))
+	expectedSignature.Write(value)
+	expectedValue := expectedSignature.Sum(nil)
+	if !hmac.Equal(signature, expectedValue) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	jsonResponse, err := json.Marshal(urls)
+	// Получаем список сокращенных URL пользователя из базы данных
+	urls, err := getUserUrls(cookie.Value, storage)
 	if err != nil {
+		fmt.Println("ggghgh")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonResponse)
+	// Если список пустой, возвращаем HTTP-статус 204 No Content
+	if len(urls) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	// Отправляем список сокращенных URL в формате JSON
+	json.NewEncoder(w).Encode(urls)
+}
+
+func getUserUrls(cookieValue string, storage storage.URLStorage) ([]map[string]string, error) {
+	parts := strings.Split(cookieValue, "|")
+	value, err := base64.StdEncoding.DecodeString(parts[0])
+	fmt.Println(value)
+	if err != nil {
+		return nil, err
+	}
+
+	urls, err := storage.GetAllURLs()
+	if err != nil {
+		return nil, err
+	}
+
+	return urls, nil
 }

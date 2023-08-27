@@ -22,7 +22,7 @@ func RegisterRoutes(r chi.Router, storageURL storage.URLStorage, baseURL string,
 		services.Ping(storageURL)
 	})
 	r.Get("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
-		services.UserURLsHandler(w, r)
+		services.UserUrlsHandler(w, r, storageURL)
 	})
 	r.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		services.HandlePostRequest(w, r, storageURL, baseURL)
