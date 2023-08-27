@@ -184,7 +184,10 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 var users = make(map[string][]URL)
 
 func UserURLsHandler(w http.ResponseWriter, req *http.Request) {
+	cookie, err := cookieswork.GenerateCookie("user1")
+	http.SetCookie(w, cookie)
 	userID, err := cookieswork.GetUserIDFromCookie(req)
+	log.Println(userID)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
