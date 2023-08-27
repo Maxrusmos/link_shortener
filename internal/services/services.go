@@ -1,8 +1,6 @@
 package services
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -200,33 +198,32 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	}
 
 	// Проверяем подлинность куки
-	parts := strings.Split(cookie.Value, "|")
-	if len(parts) != 2 {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	value, err := base64.StdEncoding.DecodeString(parts[0])
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	signature, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	expectedSignature := hmac.New(sha256.New, []byte("secret_key"))
-	expectedSignature.Write(value)
-	expectedValue := expectedSignature.Sum(nil)
-	if !hmac.Equal(signature, expectedValue) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
+	// parts := strings.Split(cookie.Value, "|")
+	// if len(parts) != 2 {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
+	// value, err := base64.StdEncoding.DecodeString(parts[0])
+	// if err != nil {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
+	// signature, err := base64.StdEncoding.DecodeString(parts[1])
+	// if err != nil {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
+	// expectedSignature := hmac.New(sha256.New, []byte("secret_key"))
+	// expectedSignature.Write(value)
+	// expectedValue := expectedSignature.Sum(nil)
+	// if !hmac.Equal(signature, expectedValue) {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
 
 	// Получаем список сокращенных URL пользователя из базы данных
 	urls, err := getUserUrls(cookie.Value, storage)
 	if err != nil {
-		fmt.Println("ggghgh")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
