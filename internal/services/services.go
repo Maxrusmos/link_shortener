@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	config "link_shortener/internal/configs"
-	"link_shortener/internal/cookieswork"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
 	"log"
@@ -187,8 +186,11 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 var users = make(map[string][]URL)
 
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
-	Scookie, err := cookieswork.GenerateCookie("user")
-	http.SetCookie(w, Scookie)
+	// Scookie, err := cookieswork.GenerateCookie("user")
+	// if err != nil {
+	// 	return
+	// }
+	// http.SetCookie(w, Scookie)
 
 	// Получаем куку с уникальным идентификатором пользователя
 	cookie, err := r.Cookie("auth_cookie")

@@ -8,8 +8,6 @@ import (
 	"net/http"
 )
 
-var cookieName = "auth_cookie"
-
 func GenerateCookie(id string) (*http.Cookie, error) {
 	value, err := json.Marshal(id)
 	if err != nil {
