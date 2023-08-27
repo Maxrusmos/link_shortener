@@ -51,6 +51,19 @@ func (m *MockURLStorage) GetURL(key string) (string, error) {
 	return url, nil
 }
 
+func (m *MockURLStorage) GetAllURLs() ([]map[string]string, error) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	urls := make([]map[string]string, 0)
+	for shortURL, originalURL := range m.urls {
+		url := make(map[string]string)
+		url["short_url"] = shortURL
+		url["original_url"] = originalURL
+		urls = append(urls, url)
+	}
+	return urls, nil
+}
+
 func (m *MockURLStorage) GetOriginalURL(key string) (string, bool) {
 	return key, false
 }
