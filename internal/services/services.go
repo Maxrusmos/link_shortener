@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	config "link_shortener/internal/configs"
+	"link_shortener/internal/cookieswork"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
 	"log"
@@ -177,5 +178,30 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	w.Write(jsonResponse)
+}
+
+var users = make(map[string][]URL)
+
+func UserURLsHandler(w http.ResponseWriter, req *http.Request) {
+	userID, err := cookieswork.GetUserIDFromCookie(req)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	urls, exists := users[userID]
+	if !exists || len(urls) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	jsonResponse, err := json.Marshal(urls)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
 }
