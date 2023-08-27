@@ -184,6 +184,7 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 var users = make(map[string][]URL)
 
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
+	w.Header().Set("Content-Type", "application/json")
 	// Scookie, err := cookieswork.GenerateCookie("user")
 	// if err != nil {
 	// 	return
@@ -236,7 +237,6 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 
 	// Отправляем список сокращенных URL в формате JSON
 	json.NewEncoder(w).Encode(urls)
-	w.Header().Set("Content-Type", "application/json")
 }
 
 func getUserUrls(cookieValue string, storage storage.URLStorage) ([]map[string]string, error) {
