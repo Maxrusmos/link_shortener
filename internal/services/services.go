@@ -224,6 +224,7 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 
 	// Получаем список сокращенных URL пользователя из базы данных
 	urls, err := getUserUrls(cookie.Value, storage)
+
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return

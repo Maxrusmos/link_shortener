@@ -259,11 +259,41 @@ func (s *DatabaseURLStorage) GetURL(key string) (string, error) {
 	return originalURL, nil
 }
 
+type Url struct {
+	short_url    string
+	original_url string
+}
+
 func (s *DatabaseURLStorage) GetAllURLs() ([]map[string]string, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	urls := make([]map[string]string, 0)
-	return urls, nil
+	query := "SELECT short_url, original_url FROM shortened_urls"
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	urls := []Url{}
+	for rows.Next() {
+		var url Url
+		err := rows.Scan(&url.short_url, &url.original_url)
+		if err != nil {
+			return nil, err
+		}
+		urls = append(urls, url)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	var urlMaps []map[string]string
+	for _, url := range urls {
+		urlMap := make(map[string]string)
+		urlMap["short_url"] = url.short_url
+		urlMap["original_url"] = url.original_url
+		urlMaps = append(urlMaps, urlMap)
+	}
+
+	return urlMaps, nil
 }
 
 func (s *DatabaseURLStorage) Ping() error {
