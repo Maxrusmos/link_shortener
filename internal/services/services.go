@@ -193,7 +193,7 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	// Получаем куку с уникальным идентификатором пользователя
 	cookie, err := r.Cookie("auth_cookie")
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		// http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
