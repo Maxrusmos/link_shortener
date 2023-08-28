@@ -1,7 +1,6 @@
 package services
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -185,11 +184,6 @@ var users = make(map[string][]URL)
 
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	w.Header().Set("Content-Type", "application/json")
-	// Scookie, err := cookieswork.GenerateCookie("user")
-	// if err != nil {
-	// 	return
-	// }
-	// http.SetCookie(w, Scookie)
 
 	// Получаем куку с уникальным идентификатором пользователя
 	cookie, err := r.Cookie("auth_cookie")
@@ -223,7 +217,7 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	// }
 
 	// Получаем список сокращенных URL пользователя из базы данных
-	urls, err := getUserUrls(cookie.Value, storage)
+	jsonUrls, err := getUserUrls(cookie.Value, storage)
 
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -231,27 +225,32 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	}
 
 	// Если список пустой, возвращаем HTTP-статус 204 No Content
-	if len(urls) == 0 {
+	if len(jsonUrls) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
 	// Отправляем список сокращенных URL в формате JSON
-	json.NewEncoder(w).Encode(urls)
+	w.Write(jsonUrls)
 }
 
-func getUserUrls(cookieValue string, storage storage.URLStorage) ([]map[string]string, error) {
-	parts := strings.Split(cookieValue, "|")
-	value, err := base64.StdEncoding.DecodeString(parts[0])
-	fmt.Println(value)
-	if err != nil {
-		return nil, err
-	}
+func getUserUrls(cookieValue string, storage storage.URLStorage) ([]byte, error) {
+	// parts := strings.Split(cookieValue, "|")
+	// value, err := base64.StdEncoding.DecodeString(parts[0])
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	urls, err := storage.GetAllURLs()
 	if err != nil {
 		return nil, err
 	}
 
-	return urls, nil
+	// Преобразуем список urls в формат JSON
+	jsonUrls, err := json.Marshal(urls)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonUrls, nil
 }
