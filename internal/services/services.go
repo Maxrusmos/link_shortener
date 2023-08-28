@@ -1,9 +1,6 @@
 package services
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -188,32 +185,32 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 
 	cookie, err := r.Cookie("auth_cookie")
 	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		http.Error(w, "Unauthorized 12345678", http.StatusUnauthorized)
 		return
 	}
 
-	parts := strings.Split(cookie.Value, "|")
-	if len(parts) != 2 {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	value, err := base64.StdEncoding.DecodeString(parts[0])
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	signature, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-	expectedSignature := hmac.New(sha256.New, []byte("secret_key"))
-	expectedSignature.Write(value)
-	expectedValue := expectedSignature.Sum(nil)
-	if !hmac.Equal(signature, expectedValue) {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
+	// parts := strings.Split(cookie.Value, "|")
+	// if len(parts) != 2 {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
+	// value, err := base64.StdEncoding.DecodeString(parts[0])
+	// if err != nil {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
+	// signature, err := base64.StdEncoding.DecodeString(parts[1])
+	// if err != nil {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
+	// expectedSignature := hmac.New(sha256.New, []byte("secret_key"))
+	// expectedSignature.Write(value)
+	// expectedValue := expectedSignature.Sum(nil)
+	// if !hmac.Equal(signature, expectedValue) {
+	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 	return
+	// }
 
 	// Получаем список сокращенных URL пользователя из базы данных
 	jsonUrls, err := getUserUrls(cookie.Value, storage)
@@ -234,40 +231,15 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	w.Write(jsonUrls)
 }
 
-// func getUserUrls(cookieValue string, storage storage.URLStorage) ([]byte, error) {
-// 	// parts := strings.Split(cookieValue, "|")
-// 	// value, err := base64.StdEncoding.DecodeString(parts[0])
-// 	// if err != nil {
-// 	// 	return nil, err
-// 	// }
-
-// 	urls, err := storage.GetAllURLs()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// Преобразуем список urls в формат JSON
-// 	jsonUrls, err := json.Marshal(urls)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return jsonUrls, nil
-// }
-
 func getUserUrls(cookieValue string, storage storage.URLStorage) ([]byte, error) {
 	urls, err := storage.GetAllURLs()
 	if err != nil {
 		return nil, err
 	}
-
-	// Преобразуем список urls в формат JSON
 	jsonUrls, err := json.Marshal(urls)
 	if err != nil {
 		return nil, err
 	}
-
-	// Если список пустой, вернем пустой JSON-массив
 	if len(urls) == 0 {
 		return []byte("[]"), nil
 	}
