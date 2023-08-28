@@ -182,8 +182,6 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 }
 
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
-	w.Header().Set("Content-Type", "application/json")
-
 	userID := cookieswork.GetUserID(r)
 	if userID == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
