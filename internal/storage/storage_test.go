@@ -13,7 +13,7 @@ func TestFileURLStorage(t *testing.T) {
 }
 
 func testStorage(t *testing.T, storage URLStorage) {
-	storage.AddURL("abc123", "http://example.com")
+	storage.AddURL("abc123", "http://example.com", "user1")
 	url, err := storage.GetURL("abc123")
 	if err != nil {
 		t.Errorf("GetURL returned an error: %v", err)

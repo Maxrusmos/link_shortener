@@ -15,12 +15,12 @@ import (
 )
 
 type URLStorage interface {
-	AddURL(key string, url string) error
+	AddURL(key string, url string, userID string) error
 	GetURL(key string) (string, error)
 	AddURLSH(url string) (string, error)
 	GetOriginalURL(key string) (string, bool)
 	Ping() error
-	GetAllURLs() ([]map[string]string, error)
+	GetAllURLs(userID string) ([]map[string]string, error)
 }
 
 type MapURLStorage struct {
@@ -38,7 +38,7 @@ func (s *MapURLStorage) GetOriginalURL(key string) (string, bool) {
 	return key, false
 }
 
-func (s *MapURLStorage) AddURL(key string, url string) error {
+func (s *MapURLStorage) AddURL(key string, url string, userID string) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	if _, found := s.urls[key]; found {
@@ -66,14 +66,14 @@ func (s *MapURLStorage) GetURL(key string) (string, error) {
 	return url, nil
 }
 
-func (s *MapURLStorage) GetAllURLs() ([]map[string]string, error) {
+func (s *MapURLStorage) GetAllURLs(userID string) ([]map[string]string, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	urls := make([]map[string]string, 0)
 	for shortURL, originalURL := range s.urls {
 		url := make(map[string]string)
-		url["short_url"] = shortURL
 		url["original_url"] = originalURL
+		url["short_url"] = conf.BaseURL + "/" + shortURL
 		urls = append(urls, url)
 	}
 	return urls, nil
@@ -105,7 +105,7 @@ type JSONURLs struct {
 
 var conf = config.GetConfig()
 
-func (s *FileURLStorage) AddURL(key string, url string) error {
+func (s *FileURLStorage) AddURL(key string, url string, userID string) error {
 	log.Println(s.filePath, key, url)
 	s.mutex.Lock()
 	dataToWrite := JSONURLs{
@@ -193,7 +193,7 @@ func (s *FileURLStorage) GetURL(key string) (string, error) {
 	return data.OriginURL, nil
 }
 
-func (s *FileURLStorage) GetAllURLs() ([]map[string]string, error) {
+func (s *FileURLStorage) GetAllURLs(userID string) ([]map[string]string, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	urls := make([]map[string]string, 0)
@@ -228,9 +228,9 @@ func (s *DatabaseURLStorage) GetOriginalURL(key string) (string, bool) {
 	return originalURL, false
 }
 
-func (s *DatabaseURLStorage) AddURL(key string, url string) error {
+func (s *DatabaseURLStorage) AddURL(key string, url string, userID string) error {
 	shortURL := shortenurl.Shortener(url)
-	err := dbwork.AddURL(s.db, shortURL, url)
+	err := dbwork.AddURL(s.db, shortURL, url, userID)
 	if err != nil {
 		return err
 	}
@@ -241,10 +241,10 @@ func (s *DatabaseURLStorage) AddURL(key string, url string) error {
 
 func (s *DatabaseURLStorage) AddURLSH(url string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
-	err := dbwork.AddURL(s.db, shortURL, url)
-	if err != nil {
-		return "", err
-	}
+	// err := dbwork.AddURL(s.db, shortURL, url, )
+	// if err != nil {
+	// 	return "", err
+	// }
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return shortURL, nil
@@ -264,9 +264,9 @@ type URL struct {
 	originalURL string
 }
 
-func (s *DatabaseURLStorage) GetAllURLs() ([]map[string]string, error) {
-	query := "SELECT short_url, original_url FROM shortened_urls"
-	rows, err := s.db.Query(query)
+func (s *DatabaseURLStorage) GetAllURLs(userID string) ([]map[string]string, error) {
+	query := "SELECT short_url, original_url FROM shortened_urls WHERE user_id = $1"
+	rows, err := s.db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}

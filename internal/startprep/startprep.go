@@ -64,9 +64,10 @@ func GetStorageURL(conf config.Config) storage.URLStorage {
 	}
 	err = dbwork.CreateTables(db, `CREATE TABLE IF NOT EXISTS shortened_urls  (
         id SERIAL PRIMARY KEY,
-        short_url VARCHAR(50) NOT NULL,
-        original_url TEXT NOT NULL,
-        UNIQUE (original_url)
+    	short_url TEXT NOT NULL,
+    	original_url TEXT NOT NULL,
+   	 	user_id TEXT,
+    	UNIQUE (original_url)
       )`)
 	if err != nil {
 		panic(err)

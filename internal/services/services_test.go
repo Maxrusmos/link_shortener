@@ -17,7 +17,7 @@ type MockURLStorage struct {
 	err   error
 }
 
-func (m *MockURLStorage) AddURL(key string, url string) error {
+func (m *MockURLStorage) AddURL(key string, url string, userID string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if m.err != nil {
@@ -51,7 +51,7 @@ func (m *MockURLStorage) GetURL(key string) (string, error) {
 	return url, nil
 }
 
-func (m *MockURLStorage) GetAllURLs() ([]map[string]string, error) {
+func (m *MockURLStorage) GetAllURLs(userId string) ([]map[string]string, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	urls := make([]map[string]string, 0)

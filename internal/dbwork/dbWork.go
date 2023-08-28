@@ -28,10 +28,11 @@ func CreateTables(db *sql.DB, createTableQuery string) error {
 	return nil
 }
 
-func AddURL(db *sql.DB, shortURL, originalURL string) error {
+func AddURL(db *sql.DB, shortURL, originalURL string, userID string) error {
 	fmt.Println("add", shortURL, ":::", originalURL)
-	_, err := db.Exec("INSERT INTO shortened_urls (short_url, original_url) VALUES ($1, $2)", shortURL, originalURL)
+	_, err := db.Exec("INSERT INTO shortened_urls (short_url, original_url, user_id) VALUES ($1, $2, $3)", shortURL, originalURL, userID)
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 
