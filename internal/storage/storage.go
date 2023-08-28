@@ -17,7 +17,7 @@ import (
 type URLStorage interface {
 	AddURL(key string, url string, userID string) error
 	GetURL(key string) (string, error)
-	AddURLSH(url string) (string, error)
+	AddURLSH(url string, userID string) (string, error)
 	GetOriginalURL(key string) (string, bool)
 	Ping() error
 	GetAllURLs(userID string) ([]map[string]string, error)
@@ -48,7 +48,7 @@ func (s *MapURLStorage) AddURL(key string, url string, userID string) error {
 	return nil
 }
 
-func (s *MapURLStorage) AddURLSH(url string) (string, error) {
+func (s *MapURLStorage) AddURLSH(url string, userID string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -130,7 +130,7 @@ func (s *FileURLStorage) AddURL(key string, url string, userID string) error {
 	return nil
 }
 
-func (s *FileURLStorage) AddURLSH(url string) (string, error) {
+func (s *FileURLStorage) AddURLSH(url string, userID string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
 	log.Println("FileURLStorageADDURL")
 	s.mutex.Lock()
@@ -239,12 +239,12 @@ func (s *DatabaseURLStorage) AddURL(key string, url string, userID string) error
 	return nil
 }
 
-func (s *DatabaseURLStorage) AddURLSH(url string) (string, error) {
+func (s *DatabaseURLStorage) AddURLSH(url string, userID string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
-	// err := dbwork.AddURL(s.db, shortURL, url, )
-	// if err != nil {
-	// 	return "", err
-	// }
+	err := dbwork.AddURL(s.db, shortURL, url, userID)
+	if err != nil {
+		return "", err
+	}
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	return shortURL, nil

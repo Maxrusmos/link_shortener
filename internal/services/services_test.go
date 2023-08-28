@@ -27,7 +27,7 @@ func (m *MockURLStorage) AddURL(key string, url string, userID string) error {
 	return nil
 }
 
-func (m *MockURLStorage) AddURLSH(url string) (string, error) {
+func (m *MockURLStorage) AddURLSH(url string, userID string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

@@ -115,7 +115,8 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		w.Write([]byte(jsonResponse))
 		return
 	}
-	shortURL, err := storage.AddURLSH(url.URL)
+	userID := cookieswork.GetUserID(r)
+	shortURL, err := storage.AddURLSH(url.URL, userID)
 	if err != nil {
 		http.Error(w, "Failed to add URL", http.StatusInternalServerError)
 		return
@@ -158,8 +159,9 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 	}
 
 	var responses []BatchURLResponse
+	userID := cookieswork.GetUserID(r)
 	for _, req := range requests {
-		shortURL, err := storage.AddURLSH(req.OriginalURL)
+		shortURL, err := storage.AddURLSH(req.OriginalURL, userID)
 		if err != nil {
 			http.Error(w, "Failed to add URL", http.StatusInternalServerError)
 			return
