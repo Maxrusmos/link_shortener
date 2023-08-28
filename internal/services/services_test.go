@@ -51,7 +51,7 @@ func (m *MockURLStorage) GetURL(key string) (string, error) {
 	return url, nil
 }
 
-func (m *MockURLStorage) GetAllURLs(userId string) ([]map[string]string, error) {
+func (m *MockURLStorage) GetAllURLs(userID string) ([]map[string]string, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	urls := make([]map[string]string, 0)

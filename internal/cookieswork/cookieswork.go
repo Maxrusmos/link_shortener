@@ -15,7 +15,7 @@ func SetAuthCookie(w http.ResponseWriter, userID string) {
 	cookie := &http.Cookie{
 		Name:     authCookieName,
 		Value:    userID,
-		Expires:  time.Now().Add(24 * time.Hour), // Кука истекает через 24 часа
+		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 		Path:     "/",
 	}
