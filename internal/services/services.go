@@ -196,24 +196,29 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 		return
 	}
 
+	if len(jsonUrls) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonUrls)
 }
 
 func getUserUrls(userID string, storage storage.URLStorage) ([]byte, error) {
-	// Получение URL, специфичных для пользователя, из хранилища на основе userID
 	urls, err := storage.GetAllURLs()
 	if err != nil {
 		return nil, err
 	}
 
+	if len(urls) == 0 {
+		return nil, nil
+	}
+
 	jsonUrls, err := json.Marshal(urls)
 	if err != nil {
 		return nil, err
-	}
-
-	if len(urls) == 0 {
-		return []byte("[]"), nil
 	}
 
 	return jsonUrls, nil

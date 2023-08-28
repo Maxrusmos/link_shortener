@@ -259,9 +259,9 @@ func (s *DatabaseURLStorage) GetURL(key string) (string, error) {
 	return originalURL, nil
 }
 
-type Url struct {
-	short_url    string
-	original_url string
+type URL struct {
+	shortURL    string
+	originalURL string
 }
 
 func (s *DatabaseURLStorage) GetAllURLs() ([]map[string]string, error) {
@@ -272,10 +272,10 @@ func (s *DatabaseURLStorage) GetAllURLs() ([]map[string]string, error) {
 	}
 	defer rows.Close()
 
-	urls := []Url{}
+	urls := []URL{}
 	for rows.Next() {
-		var url Url
-		err := rows.Scan(&url.short_url, &url.original_url)
+		var url URL
+		err := rows.Scan(&url.shortURL, &url.originalURL)
 		if err != nil {
 			return nil, err
 		}
@@ -288,8 +288,8 @@ func (s *DatabaseURLStorage) GetAllURLs() ([]map[string]string, error) {
 	var urlMaps []map[string]string
 	for _, url := range urls {
 		urlMap := make(map[string]string)
-		urlMap["short_url"] = url.short_url
-		urlMap["original_url"] = url.original_url
+		urlMap["short_url"] = url.shortURL
+		urlMap["original_url"] = url.originalURL
 		urlMaps = append(urlMaps, urlMap)
 	}
 
