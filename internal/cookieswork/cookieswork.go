@@ -1,25 +1,31 @@
 package cookieswork
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
-	"encoding/json"
 	"net/http"
+	"time"
 )
 
-func GenerateCookie(id string) (*http.Cookie, error) {
-	value, err := json.Marshal(id)
-	if err != nil {
-		return nil, err
-	}
-	signature := hmac.New(sha256.New, []byte("secret_key"))
-	signature.Write(value)
-	signedValue := signature.Sum(nil)
+const (
+	authCookieName = "auth_cookie"
+	// Здесь лучше использовать более безопасный метод для генерации секретного ключа.
+	authSecret = "123"
+)
+
+func SetAuthCookie(w http.ResponseWriter, userID string) {
 	cookie := &http.Cookie{
-		Name:  "auth_cookie",
-		Value: base64.StdEncoding.EncodeToString(value) + "|" + base64.StdEncoding.EncodeToString(signedValue),
-		Path:  "/",
+		Name:     authCookieName,
+		Value:    userID,
+		Expires:  time.Now().Add(24 * time.Hour), // Кука истекает через 24 часа
+		HttpOnly: true,
+		Path:     "/",
 	}
-	return cookie, nil
+	http.SetCookie(w, cookie)
+}
+
+func GetUserID(r *http.Request) string {
+	cookie, err := r.Cookie(authCookieName)
+	if err != nil {
+		return ""
+	}
+	return cookie.Value
 }

@@ -4,20 +4,19 @@ import (
 	"flag"
 	config "link_shortener/internal/configs"
 	"link_shortener/internal/startprep"
-	"net/http"
 
 	"github.com/go-chi/chi"
 	"go.uber.org/zap"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		cookie := &http.Cookie{
-			Name:  "auth_cookie",
-			Value: "user",
-		}
-		http.SetCookie(w, cookie)
-	})
+	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	cookie := &http.Cookie{
+	// 		Name:  "auth_cookie",
+	// 		Value: "user",
+	// 	}
+	// 	http.SetCookie(w, cookie)
+	// })
 	logger, err := zap.NewProduction()
 	if err != nil {
 		panic(err)

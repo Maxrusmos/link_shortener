@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	config "link_shortener/internal/configs"
+	"link_shortener/internal/cookieswork"
 	"link_shortener/internal/shortenurl"
 	"link_shortener/internal/storage"
 	"log"
@@ -183,63 +184,34 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	w.Header().Set("Content-Type", "application/json")
 
-	cookie, err := r.Cookie("auth_cookie")
-	if err != nil {
-		http.Error(w, "Unauthorized 12345678", http.StatusUnauthorized)
+	userID := cookieswork.GetUserID(r)
+	if userID == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	// parts := strings.Split(cookie.Value, "|")
-	// if len(parts) != 2 {
-	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	// 	return
-	// }
-	// value, err := base64.StdEncoding.DecodeString(parts[0])
-	// if err != nil {
-	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	// 	return
-	// }
-	// signature, err := base64.StdEncoding.DecodeString(parts[1])
-	// if err != nil {
-	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	// 	return
-	// }
-	// expectedSignature := hmac.New(sha256.New, []byte("secret_key"))
-	// expectedSignature.Write(value)
-	// expectedValue := expectedSignature.Sum(nil)
-	// if !hmac.Equal(signature, expectedValue) {
-	// 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	// 	return
-	// }
-
-	// Получаем список сокращенных URL пользователя из базы данных
-	jsonUrls, err := getUserUrls(cookie.Value, storage)
-
+	jsonUrls, err := getUserUrls(userID, storage)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	// Если список пустой, возвращаем HTTP-статус 204 No Content
-	if len(jsonUrls) == 0 {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	// Отправляем список сокращенных URL в формате JSON
-	fmt.Println(jsonUrls)
+	w.WriteHeader(http.StatusOK)
 	w.Write(jsonUrls)
 }
 
-func getUserUrls(cookieValue string, storage storage.URLStorage) ([]byte, error) {
+func getUserUrls(userID string, storage storage.URLStorage) ([]byte, error) {
+	// Получение URL, специфичных для пользователя, из хранилища на основе userID
 	urls, err := storage.GetAllURLs()
 	if err != nil {
 		return nil, err
 	}
+
 	jsonUrls, err := json.Marshal(urls)
 	if err != nil {
 		return nil, err
 	}
+
 	if len(urls) == 0 {
 		return []byte("[]"), nil
 	}
