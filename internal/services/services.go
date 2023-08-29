@@ -189,20 +189,8 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	w.Header().Set("Content-Type", "application/json")
 	userID := cookieswork.GetUserID(r)
 	fmt.Println(userID)
-	var jsonUrls []byte
-	var err error
-	if userID == "" {
-		fmt.Println("userIDempty", userID)
-		jsonUrls, err = getUserUrls("", storage)
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		// 	w.WriteHeader(http.StatusUnauthorized)
-		// 	return
-		// w.WriteHeader(http.StatusNoContent)
-	}
-	jsonUrls, err = getUserUrls(userID, storage)
+
+	jsonUrls, err := getUserUrls(userID, storage)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -211,6 +199,12 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	if len(jsonUrls) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
+	}
+	if userID == "" {
+		fmt.Println("userIDempty", userID)
+		// 	w.WriteHeader(http.StatusUnauthorized)
+		// 	return
+		// w.WriteHeader(http.StatusNoContent)
 	}
 
 	w.WriteHeader(http.StatusOK)
