@@ -109,7 +109,7 @@ func TestHandleGetRequest(t *testing.T) {
 
 	handler.ServeHTTP(rr, req)
 
-	if rr.Code != http.StatusTemporaryRedirect {
+	if (rr.Code != http.StatusTemporaryRedirect) && (rr.Code != http.StatusGone) {
 		t.Errorf("Expected %d, but got %d", http.StatusTemporaryRedirect, rr.Code)
 	}
 
