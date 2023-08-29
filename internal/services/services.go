@@ -187,7 +187,7 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	w.Header().Set("Content-Type", "application/json")
 
-	if !cookieswork.IsAuthenticated(r) {
+	if !cookieswork.IsAuthenticated(w, r) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

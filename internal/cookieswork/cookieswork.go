@@ -3,10 +3,12 @@ package cookieswork
 import (
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const (
-	authCookieName = "auth"
+	authCookieName = "12"
 	authSecret     = "123"
 )
 
@@ -29,10 +31,16 @@ func GetUserID(r *http.Request) string {
 	return cookie.Value
 }
 
-func IsAuthenticated(r *http.Request) bool {
+func IsAuthenticated(w http.ResponseWriter, r *http.Request) bool {
 	cookie, err := r.Cookie(authCookieName)
 	if err != nil || cookie.Value == "" {
+		userID := generateUniqueUserID()
+		SetAuthCookie(w, userID)
 		return false
 	}
 	return true
+}
+
+func generateUniqueUserID() string {
+	return uuid.New().String()
 }
