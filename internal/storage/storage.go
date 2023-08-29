@@ -134,7 +134,7 @@ func (s *FileURLStorage) AddURL(key string, url string, userID string) error {
 
 func (s *FileURLStorage) AddURLSH(url string, userID string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
-	log.Println("FileURLStorageADDURL")
+	log.Println("FileURLStorageADDURL", shortURL)
 	s.mutex.Lock()
 	dataToWrite := JSONURLs{
 		ShortURL:  conf.BaseURL + "/" + shortURL,
@@ -274,7 +274,8 @@ func (s *DatabaseURLStorage) AddURL(key string, url string, userID string) error
 
 func (s *DatabaseURLStorage) AddURLSH(url string, userID string) (string, error) {
 	shortURL := shortenurl.Shortener(url)
-	err := dbwork.AddURL(s.db, shortURL, url, userID)
+	log.Println("FileURLStorageADDURL", shortURL)
+	err := dbwork.AddURL(s.db, conf.BaseURL+"/"+shortURL, url, userID)
 	if err != nil {
 		return "", err
 	}
