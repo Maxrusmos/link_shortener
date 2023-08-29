@@ -263,7 +263,7 @@ func (s *DatabaseURLStorage) GetOriginalURL(key string) (string, bool) {
 
 func (s *DatabaseURLStorage) AddURL(key string, url string, userID string) error {
 	shortURL := shortenurl.Shortener(url)
-	err := dbwork.AddURL(s.db, shortURL, url, userID)
+	err := dbwork.AddURL(s.db, conf.BaseURL+"/"+shortURL, url, userID)
 	if err != nil {
 		return err
 	}
@@ -284,7 +284,7 @@ func (s *DatabaseURLStorage) AddURLSH(url string, userID string) (string, error)
 }
 
 func (s *DatabaseURLStorage) GetURL(key string) (string, error) {
-	originalURL, err := dbwork.GetOriginalURL(s.db, key)
+	originalURL, err := dbwork.GetOriginalURL(s.db, conf.BaseURL+"/"+key)
 	if err != nil {
 		fmt.Println(err)
 		return "", err
