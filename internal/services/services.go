@@ -42,8 +42,9 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	}
 	originalURL := strings.TrimSpace(string(body))
 	shortURL := shortenurl.Shortener(originalURL)
-	userID := cookieswork.GetUserID(r)
 	cookieswork.IsAuthenticated(w, r)
+
+	userID := cookieswork.GetUserID(r)
 
 	mutex.Lock()
 	defer mutex.Unlock()

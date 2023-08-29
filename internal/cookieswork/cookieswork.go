@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	authCookieName = "1xxsdsd23kshkd"
+	authCookieName = "auth"
 	authSecret     = "123"
 )
 
