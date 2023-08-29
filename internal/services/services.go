@@ -46,18 +46,18 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 
 	mutex.Lock()
 	defer mutex.Unlock()
+	if userID != "" {
+		_, found := storage.GetOriginalURL(shortURL)
+		if found {
+			response := fmt.Sprintf("%s/%s", baseURL, shortURL)
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusConflict)
+			w.Write([]byte(response))
+			return
+		}
 
-	_, found := storage.GetOriginalURL(shortURL)
-	if found {
-		response := fmt.Sprintf("%s/%s", baseURL, shortURL)
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusConflict)
-		w.Write([]byte(response))
-		return
+		storage.AddURL(shortURL, originalURL, userID)
 	}
-
-	storage.AddURL(shortURL, originalURL, userID)
-
 	response := fmt.Sprintf("%s/%s", baseURL, shortURL)
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
@@ -116,12 +116,14 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		return
 	}
 	userID := cookieswork.GetUserID(r)
-	shortURL, err := storage.AddURLSH(url.URL, userID)
-	if err != nil {
-		http.Error(w, "Failed to add URL", http.StatusInternalServerError)
-		return
+	var shortURL string
+	if userID != "" {
+		shortURL, err = storage.AddURLSH(url.URL, userID)
+		if err != nil {
+			http.Error(w, "Failed to add URL", http.StatusInternalServerError)
+			return
+		}
 	}
-
 	response := ShortURL{Result: baseURL + "/" + shortURL}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
@@ -160,17 +162,19 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 
 	var responses []BatchURLResponse
 	userID := cookieswork.GetUserID(r)
-	for _, req := range requests {
-		shortURL, err := storage.AddURLSH(req.OriginalURL, userID)
-		if err != nil {
-			http.Error(w, "Failed to add URL", http.StatusInternalServerError)
-			return
+	if userID != "" {
+		for _, req := range requests {
+			shortURL, err := storage.AddURLSH(req.OriginalURL, userID)
+			if err != nil {
+				http.Error(w, "Failed to add URL", http.StatusInternalServerError)
+				return
+			}
+			response := BatchURLResponse{
+				CorrelationID: req.CorrelationID,
+				ShortURL:      baseURL + "/" + shortURL,
+			}
+			responses = append(responses, response)
 		}
-		response := BatchURLResponse{
-			CorrelationID: req.CorrelationID,
-			ShortURL:      baseURL + "/" + shortURL,
-		}
-		responses = append(responses, response)
 	}
 
 	jsonResponse, err := json.Marshal(responses)
@@ -187,20 +191,24 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	w.Header().Set("Content-Type", "application/json")
 	userID := cookieswork.GetUserID(r)
-	// if userID == "" {
-	// 	w.WriteHeader(http.StatusUnauthorized)
-	// 	return
-	// }
-
-	jsonUrls, err := getUserUrls(userID, storage)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+	fmt.Println(userID)
+	if userID == "" {
+		fmt.Println("userID empty", userID)
+		// 	w.WriteHeader(http.StatusUnauthorized)
+		// 	return
 	}
+	var jsonUrls []byte
+	if userID != "" {
+		jsonUrls, err := getUserUrls(userID, storage)
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 
-	if len(jsonUrls) == 0 {
-		w.WriteHeader(http.StatusNoContent)
-		return
+		if len(jsonUrls) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
