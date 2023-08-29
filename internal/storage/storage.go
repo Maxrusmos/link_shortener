@@ -251,7 +251,7 @@ func NewDatabaseURLStorage(db *sql.DB) URLStorage {
 func (s *DatabaseURLStorage) GetOriginalURL(key string) (string, bool) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	originalURL, err := dbwork.GetOriginalURL(s.db, key)
+	originalURL, err := dbwork.GetOriginalURL(s.db, conf.BaseURL+"/"+key)
 	if err == sql.ErrNoRows {
 		return "такой записи не существует", false
 	}
