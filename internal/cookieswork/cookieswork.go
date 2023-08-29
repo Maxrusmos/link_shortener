@@ -6,9 +6,8 @@ import (
 )
 
 const (
-	authCookieName = "a"
-	// Здесь лучше использовать более безопасный метод для генерации секретного ключа.
-	authSecret = "123"
+	authCookieName = "auth"
+	authSecret     = "123"
 )
 
 func SetAuthCookie(w http.ResponseWriter, userID string) {
@@ -28,4 +27,12 @@ func GetUserID(r *http.Request) string {
 		return ""
 	}
 	return cookie.Value
+}
+
+func IsAuthenticated(r *http.Request) bool {
+	cookie, err := r.Cookie(authCookieName)
+	if err != nil || cookie.Value == "" {
+		return false
+	}
+	return true
 }
