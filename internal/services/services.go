@@ -31,6 +31,7 @@ func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.UR
 
 func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage, baseURL string) {
 	var mutex sync.Mutex
+	mutex.Lock()
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -45,8 +46,8 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	cookieswork.IsAuthenticated(w, r)
 
 	userID := cookieswork.GetUserID(r)
+	fmt.Println("user:::::", userID)
 
-	mutex.Lock()
 	defer mutex.Unlock()
 
 	_, found := storage.GetOriginalURL(shortURL)
@@ -190,12 +191,6 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	w.Header().Set("Content-Type", "application/json")
-
-	// if !cookieswork.IsAuthenticated(w, r) {
-	// 	w.WriteHeader(http.StatusUnauthorized)
-	// 	return
-	// }
-
 	cookieswork.IsAuthenticated(w, r)
 	userID := cookieswork.GetUserID(r)
 	fmt.Println(userID)
