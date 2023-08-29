@@ -101,6 +101,7 @@ func (s *FileURLStorage) GetOriginalURL(key string) (string, bool) {
 type JSONURLs struct {
 	ShortURL  string `json:"shortURL"`
 	OriginURL string `json:"originURL"`
+	UserID    string `json:"userID"`
 }
 
 var conf = config.GetConfig()
@@ -109,8 +110,9 @@ func (s *FileURLStorage) AddURL(key string, url string, userID string) error {
 	log.Println(s.filePath, key, url)
 	s.mutex.Lock()
 	dataToWrite := JSONURLs{
-		ShortURL:  key,
+		ShortURL:  conf.BaseURL + "/" + key,
 		OriginURL: url,
+		UserID:    userID,
 	}
 	data, err := json.Marshal(dataToWrite)
 	if err != nil {
@@ -135,8 +137,9 @@ func (s *FileURLStorage) AddURLSH(url string, userID string) (string, error) {
 	log.Println("FileURLStorageADDURL")
 	s.mutex.Lock()
 	dataToWrite := JSONURLs{
-		ShortURL:  shortURL,
+		ShortURL:  conf.BaseURL + "/" + shortURL,
 		OriginURL: url,
+		UserID:    userID,
 	}
 	data, err := json.Marshal(dataToWrite)
 	if err != nil {
@@ -194,10 +197,40 @@ func (s *FileURLStorage) GetURL(key string) (string, error) {
 }
 
 func (s *FileURLStorage) GetAllURLs(userID string) ([]map[string]string, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	urls := make([]map[string]string, 0)
-	return urls, nil
+	urls := []JSONURLs{}
+
+	file, err := os.OpenFile(conf.FileStore, os.O_RDONLY|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		var url JSONURLs
+		err := json.Unmarshal(scanner.Bytes(), &url)
+		if err != nil {
+			continue
+		}
+
+		if url.UserID == userID {
+			urls = append(urls, url)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	var urlMaps []map[string]string
+	for _, url := range urls {
+		urlMap := make(map[string]string)
+		urlMap["short_url"] = url.ShortURL
+		urlMap["original_url"] = url.OriginURL
+		urlMaps = append(urlMaps, urlMap)
+	}
+
+	return urlMaps, nil
 }
 
 func (s *FileURLStorage) Ping() error {
