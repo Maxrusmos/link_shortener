@@ -185,11 +185,16 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 }
 
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
-	// cookieswork.SetAuthCookie(w, "user123")
+	cookieswork.SetAuthCookie(w, "user1")
 	w.Header().Set("Content-Type", "application/json")
 	userID := cookieswork.GetUserID(r)
 	fmt.Println(userID)
-
+	if userID == "" {
+		fmt.Println("userIDempty")
+		// 	w.WriteHeader(http.StatusUnauthorized)
+		// 	return
+		// w.WriteHeader(http.StatusNoContent)
+	}
 	jsonUrls, err := getUserUrls(userID, storage)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -199,12 +204,6 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	if len(jsonUrls) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		return
-	}
-	if userID == "" {
-		fmt.Println("userIDempty", userID)
-		// 	w.WriteHeader(http.StatusUnauthorized)
-		// 	return
-		// w.WriteHeader(http.StatusNoContent)
 	}
 
 	w.WriteHeader(http.StatusOK)
