@@ -68,6 +68,10 @@ func (m *MockURLStorage) GetOriginalURL(key string) (string, bool) {
 	return key, false
 }
 
+func (m *MockURLStorage) IsURLDeleted(id string) (bool, error) {
+	return true, nil
+}
+
 func (m *MockURLStorage) DelURL(urlsToDelete []string, userID string) error {
 	return nil
 }

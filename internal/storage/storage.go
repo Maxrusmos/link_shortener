@@ -22,6 +22,7 @@ type URLStorage interface {
 	Ping() error
 	GetAllURLs(userID string) ([]map[string]string, error)
 	DelURL(urlsToDelete []string, userID string) error
+	IsURLDeleted(id string) (bool, error)
 }
 
 type MapURLStorage struct {
@@ -88,6 +89,10 @@ func (s *MapURLStorage) DelURL(urlsToDelete []string, userID string) error {
 	return nil
 }
 
+func (s *MapURLStorage) IsURLDeleted(id string) (bool, error) {
+	return true, nil
+}
+
 type FileURLStorage struct {
 	filePath string
 	mutex    sync.Mutex
@@ -110,6 +115,10 @@ type JSONURLs struct {
 }
 
 var conf = config.GetConfig()
+
+func (s *FileURLStorage) IsURLDeleted(id string) (bool, error) {
+	return true, nil
+}
 
 func (s *FileURLStorage) AddURL(key string, url string, userID string) error {
 	log.Println(s.filePath, key, url)
@@ -308,6 +317,21 @@ func (s *DatabaseURLStorage) DelURL(urlsToDelete []string, userID string) error 
 	}
 	dbwork.DeleteFromDB(s.db, urlsToDelete, userID)
 	return nil
+}
+
+func (s *DatabaseURLStorage) IsURLDeleted(id string) (bool, error) {
+	query := "SELECT deleted_flag FROM shortened_urls WHERE short_url = $1"
+	row := s.db.QueryRow(query, id)
+
+	var deletedFlag bool
+	if err := row.Scan(&deletedFlag); err != nil {
+		if err == sql.ErrNoRows {
+			return true, nil
+		}
+		return false, err
+	}
+
+	return deletedFlag, nil
 }
 
 type URL struct {

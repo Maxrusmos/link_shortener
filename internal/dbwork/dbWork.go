@@ -66,18 +66,18 @@ func DeleteFromDB(db *sql.DB, urlsToDelete []string, userID string) error {
 		}
 	}
 
-	deleteStmt, err := db.Prepare("DELETE FROM shortened_urls WHERE deleted_flag = true AND user_id = $1")
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	defer deleteStmt.Close()
+	// deleteStmt, err := db.Prepare("DELETE FROM shortened_urls WHERE deleted_flag = true AND user_id = $1")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return err
+	// }
+	// defer deleteStmt.Close()
 
-	_, err = deleteStmt.Exec(userID)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
+	// _, err = deleteStmt.Exec(userID)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return err
+	// }
 
 	return nil
 }
