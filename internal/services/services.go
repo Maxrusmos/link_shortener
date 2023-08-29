@@ -191,8 +191,8 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	fmt.Println(userID)
 	if userID == "" {
 		fmt.Println("userIDempty")
-		// 	w.WriteHeader(http.StatusUnauthorized)
-		// 	return
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 		// w.WriteHeader(http.StatusNoContent)
 	}
 	jsonUrls, err := getUserUrls(userID, storage)
