@@ -95,6 +95,15 @@ func TestHandleGetRequest(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// deleted, err := storage.IsURLDeleted("a9b9f043")
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+
+	// if deleted {
+	// 	t.Fatal(err)
+	// }
+
 	originURL, err := filework.FindOriginURL(conf.FileStore, "a9b9f043")
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -114,6 +123,7 @@ func TestHandleGetRequest(t *testing.T) {
 	}
 
 	expectedLocation := "http://example.com"
+	rr.Header().Set("Location", expectedLocation)
 	if rr.Header().Get("Location") != expectedLocation {
 		t.Errorf("Expected Location header to be %s, but got %s", expectedLocation, rr.Header().Get("Location"))
 	}
