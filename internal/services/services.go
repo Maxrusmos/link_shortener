@@ -43,11 +43,11 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	originalURL := strings.TrimSpace(string(body))
 	shortURL := shortenurl.Shortener(originalURL)
 	userID := cookieswork.GetUserID(r)
-	if userID == "" {
-		fmt.Println("userIDempty")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	// if userID == "" {
+	// 	fmt.Println("userIDempty")
+	// 	w.WriteHeader(http.StatusUnauthorized)
+	// 	return
+	// }
 
 	mutex.Lock()
 	defer mutex.Unlock()
