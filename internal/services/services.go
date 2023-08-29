@@ -117,6 +117,7 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		w.Write([]byte(jsonResponse))
 		return
 	}
+	cookieswork.IsAuthenticated(w, r)
 	userID := cookieswork.GetUserID(r)
 	shortURL, err := storage.AddURLSH(url.URL, userID)
 	if err != nil {
@@ -161,6 +162,7 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 	}
 
 	var responses []BatchURLResponse
+	cookieswork.IsAuthenticated(w, r)
 	userID := cookieswork.GetUserID(r)
 	for _, req := range requests {
 		shortURL, err := storage.AddURLSH(req.OriginalURL, userID)
@@ -194,6 +196,7 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	// 	return
 	// }
 
+	cookieswork.IsAuthenticated(w, r)
 	userID := cookieswork.GetUserID(r)
 	fmt.Println(userID)
 	jsonUrls, err := getUserUrls(userID, storage)
