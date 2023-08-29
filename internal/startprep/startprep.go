@@ -33,6 +33,9 @@ func RegisterRoutes(r chi.Router, storageURL storage.URLStorage, baseURL string,
 	r.Post("/api/shorten/batch", func(w http.ResponseWriter, r *http.Request) {
 		services.HandleBatchShorten(w, r, storageURL, baseURL)
 	})
+	r.Delete("/api/user/urls", func(w http.ResponseWriter, r *http.Request) {
+		services.DeleteURLsHandler(w, r, storageURL)
+	})
 }
 
 func StartServer(address string, r chi.Router, logger *zap.Logger) {
@@ -67,6 +70,7 @@ func GetStorageURL(conf config.Config) storage.URLStorage {
     	short_url TEXT NOT NULL,
     	original_url TEXT NOT NULL,
    	 	user_id TEXT,
+		deleted_flag BOOLEAN DEFAULT false,
     	UNIQUE (original_url)
       )`)
 	if err != nil {

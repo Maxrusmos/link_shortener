@@ -193,7 +193,6 @@ func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URL
 	w.Header().Set("Content-Type", "application/json")
 	cookieswork.IsAuthenticated(w, r)
 	userID := cookieswork.GetUserID(r)
-	fmt.Println(userID)
 	jsonUrls, err := getUserUrls(userID, storage)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -225,4 +224,19 @@ func getUserUrls(userID string, storage storage.URLStorage) ([]byte, error) {
 	}
 
 	return jsonUrls, nil
+}
+
+func DeleteURLsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
+	cookieswork.IsAuthenticated(w, r)
+	userID := cookieswork.GetUserID(r)
+	var urlsToDelete []string
+	err := json.NewDecoder(r.Body).Decode(&urlsToDelete)
+	if err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+	fmt.Println("urlsToDelete", urlsToDelete)
+	storage.DelURL(urlsToDelete, userID)
+
+	w.WriteHeader(http.StatusAccepted)
 }

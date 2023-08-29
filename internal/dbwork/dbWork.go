@@ -49,3 +49,22 @@ func GetOriginalURL(db *sql.DB, shortURL string) (string, error) {
 	}
 	return originalURL, nil
 }
+
+func DeleteFromDB(db *sql.DB, urlsToDelete []string, userID string) error {
+	stmt, err := db.Prepare("UPDATE shortened_urls SET deleted_flag = true WHERE short_url = $1 AND user_id = $2")
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer stmt.Close()
+
+	for _, shortURL := range urlsToDelete {
+		_, err := stmt.Exec(shortURL, userID)
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	return nil
+}

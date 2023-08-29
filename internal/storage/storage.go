@@ -21,6 +21,7 @@ type URLStorage interface {
 	GetOriginalURL(key string) (string, bool)
 	Ping() error
 	GetAllURLs(userID string) ([]map[string]string, error)
+	DelURL(urlsToDelete []string, userID string) error
 }
 
 type MapURLStorage struct {
@@ -81,6 +82,10 @@ func (s *MapURLStorage) GetAllURLs(userID string) ([]map[string]string, error) {
 
 func (s *MapURLStorage) Ping() error {
 	return errors.New("Ping is not supported for MapURLStorage")
+}
+
+func (s *MapURLStorage) DelURL(urlsToDelete []string, userID string) error {
+	return nil
 }
 
 type FileURLStorage struct {
@@ -237,6 +242,10 @@ func (s *FileURLStorage) Ping() error {
 	return errors.New("Ping is not supported for FileURLStorage")
 }
 
+func (s *FileURLStorage) DelURL(urlsToDelete []string, userID string) error {
+	return nil
+}
+
 type DatabaseURLStorage struct {
 	db    *sql.DB
 	mutex sync.Mutex
@@ -291,6 +300,14 @@ func (s *DatabaseURLStorage) GetURL(key string) (string, error) {
 		return "", err
 	}
 	return originalURL, nil
+}
+
+func (s *DatabaseURLStorage) DelURL(urlsToDelete []string, userID string) error {
+	for i := range urlsToDelete {
+		urlsToDelete[i] = conf.BaseURL + "/" + urlsToDelete[i]
+	}
+	dbwork.DeleteFromDB(s.db, urlsToDelete, userID)
+	return nil
 }
 
 type URL struct {
