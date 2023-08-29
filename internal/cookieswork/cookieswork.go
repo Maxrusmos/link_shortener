@@ -36,7 +36,7 @@ func IsAuthenticated(w http.ResponseWriter, r *http.Request) bool {
 	if err != nil || cookie.Value == "" {
 		userID := generateUniqueUserID()
 		SetAuthCookie(w, userID)
-		return false
+		return true
 	}
 	return true
 }
