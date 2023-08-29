@@ -90,7 +90,7 @@ func (s *MapURLStorage) DelURL(urlsToDelete []string, userID string) error {
 }
 
 func (s *MapURLStorage) IsURLDeleted(id string) (bool, error) {
-	return true, nil
+	return false, nil
 }
 
 type FileURLStorage struct {
@@ -117,7 +117,7 @@ type JSONURLs struct {
 var conf = config.GetConfig()
 
 func (s *FileURLStorage) IsURLDeleted(id string) (bool, error) {
-	return true, nil
+	return false, nil
 }
 
 func (s *FileURLStorage) AddURL(key string, url string, userID string) error {
