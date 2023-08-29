@@ -19,7 +19,7 @@ var conf = config.GetConfig()
 func HandleGetRequest(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	id := strings.TrimPrefix(r.URL.Path, "/")
 
-	deleted, err := storage.IsURLDeleted(id)
+	deleted, err := storage.IsURLDeleted(conf.BaseURL + "/" + id)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return

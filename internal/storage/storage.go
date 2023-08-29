@@ -326,6 +326,7 @@ func (s *DatabaseURLStorage) IsURLDeleted(id string) (bool, error) {
 	var deletedFlag bool
 	if err := row.Scan(&deletedFlag); err != nil {
 		if err == sql.ErrNoRows {
+			fmt.Println(err)
 			return true, nil
 		}
 		return false, err
