@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	authCookieName = "12"
+	authCookieName = "1xxsdsd23kshkd"
 	authSecret     = "123"
 )
 
@@ -31,14 +31,12 @@ func GetUserID(r *http.Request) string {
 	return cookie.Value
 }
 
-func IsAuthenticated(w http.ResponseWriter, r *http.Request) bool {
+func IsAuthenticated(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie(authCookieName)
 	if err != nil || cookie.Value == "" {
 		userID := generateUniqueUserID()
 		SetAuthCookie(w, userID)
-		return true
 	}
-	return true
 }
 
 func generateUniqueUserID() string {

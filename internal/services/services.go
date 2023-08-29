@@ -43,6 +43,7 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	originalURL := strings.TrimSpace(string(body))
 	shortURL := shortenurl.Shortener(originalURL)
 	userID := cookieswork.GetUserID(r)
+	cookieswork.IsAuthenticated(w, r)
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -187,10 +188,10 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
 	w.Header().Set("Content-Type", "application/json")
 
-	if !cookieswork.IsAuthenticated(w, r) {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	// if !cookieswork.IsAuthenticated(w, r) {
+	// 	w.WriteHeader(http.StatusUnauthorized)
+	// 	return
+	// }
 
 	userID := cookieswork.GetUserID(r)
 	fmt.Println(userID)
