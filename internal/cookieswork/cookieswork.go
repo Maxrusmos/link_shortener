@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	authCookieName = "auth123"
+	authCookieName = "a"
 	// Здесь лучше использовать более безопасный метод для генерации секретного ключа.
 	authSecret = "123"
 )

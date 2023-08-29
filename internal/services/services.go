@@ -43,6 +43,11 @@ func HandlePostRequest(w http.ResponseWriter, r *http.Request, storage storage.U
 	originalURL := strings.TrimSpace(string(body))
 	shortURL := shortenurl.Shortener(originalURL)
 	userID := cookieswork.GetUserID(r)
+	if userID == "" {
+		fmt.Println("userIDempty")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -116,6 +121,11 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request, storage storage.URLS
 		return
 	}
 	userID := cookieswork.GetUserID(r)
+	if userID == "" {
+		fmt.Println("userIDempty")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	shortURL, err := storage.AddURLSH(url.URL, userID)
 	if err != nil {
 		http.Error(w, "Failed to add URL", http.StatusInternalServerError)
@@ -160,6 +170,11 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 
 	var responses []BatchURLResponse
 	userID := cookieswork.GetUserID(r)
+	if userID == "" {
+		fmt.Println("userIDempty")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	for _, req := range requests {
 		shortURL, err := storage.AddURLSH(req.OriginalURL, userID)
 		if err != nil {
@@ -185,14 +200,14 @@ func HandleBatchShorten(w http.ResponseWriter, r *http.Request, storage storage.
 }
 
 func UserUrlsHandler(w http.ResponseWriter, r *http.Request, storage storage.URLStorage) {
-	cookieswork.SetAuthCookie(w, "user1")
+	// cookieswork.SetAuthCookie(w, "user1")
 	w.Header().Set("Content-Type", "application/json")
 	userID := cookieswork.GetUserID(r)
 	fmt.Println(userID)
 	if userID == "" {
 		fmt.Println("userIDempty")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
+		// w.WriteHeader(http.StatusUnauthorized)
+		// return
 		// w.WriteHeader(http.StatusNoContent)
 	}
 	jsonUrls, err := getUserUrls(userID, storage)
